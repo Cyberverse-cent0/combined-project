@@ -1,0 +1,456 @@
+#!/bin/bash
+
+# Docker-based Deployment Script for Both Projects
+# Uses Docker Compose to avoid build issues
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+log() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
+error() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
+warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+
+# Configuration
+PROJECTS_DIR="$HOME/projects"
+WEBSITE_DIR="$PROJECTS_DIR/website"
+SCHOLARS_DIR="$PROJECTS_DIR/schoolars-work-bench"
+WEBSITE_REPO="https://github.com/kibirastephengichigi-bit/website.git"
+SCHOLARS_REPO="https://github.com/Cyberverse-cent0/Schoolars-work-bench.git"
+DB_USER="codecrafter"
+DB_PASSWORD="${DB_PASSWORD:-change_this_secure_password}"
+DB_NAME_WEBSITE="stephenasatsa"
+DB_NAME_SCHOLARS="scholarforge"
+
+need_sudo() { [ "$(id -u)" -ne 0 ]; }
+run_root() { if need_sudo; then sudo "$@"; else "$@"; fi; }
+
+# Step 1: Stop existing services
+stop_existing_services() {
+    log "Stopping existing services..."
+    
+    # Stop systemd services
+    run_root systemctl stop website-frontend website-backend scholars 2>/dev/null || true
+    run_root systemctl disable website-frontend website-backend scholars 2>/dev/null || true
+    
+    # Stop Docker containers
+    cd "$WEBSITE_DIR" 2>/dev/null && docker compose down 2>/dev/null || true
+    cd "$SCHOLARS_DIR" 2>/dev/null && docker compose down 2>/dev/null || true
+    
+    log "Existing services stopped"
+}
+
+# Step 2: Setup PostgreSQL databases
+setup_databases() {
+    log "Setting up PostgreSQL databases..."
+    
+    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DB_NAME_WEBSITE; then
+        sudo -u postgres psql -c "CREATE DATABASE $DB_NAME_WEBSITE;"
+        log "Created database $DB_NAME_WEBSITE"
+    fi
+    
+    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DB_NAME_SCHOLARS; then
+        sudo -u postgres psql -c "CREATE DATABASE $DB_NAME_SCHOLARS;"
+        log "Created database $DB_NAME_SCHOLARS"
+    fi
+    
+    if ! sudo -u postgres psql -c "\du" | grep -qw $DB_USER; then
+        sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
+        log "Created database user $DB_USER"
+    fi
+    
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_WEBSITE TO $DB_USER;"
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_SCHOLARS TO $DB_USER;"
+    
+    log "Database setup completed"
+}
+
+# Step 3: Clone and setup Website project
+setup_website() {
+    log "Setting up Website project..."
+    
+    if [ ! -d "$WEBSITE_DIR" ]; then
+        log "Cloning Website repository..."
+        git clone "$WEBSITE_REPO" "$WEBSITE_DIR"
+    else
+        log "Website directory exists, pulling latest changes..."
+        cd "$WEBSITE_DIR"
+        git pull
+    fi
+    
+    cd "$WEBSITE_DIR"
+    
+    # Setup .env
+    if [ ! -f .env ]; then
+        cp .env.example .env
+        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME_WEBSITE|" .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://devmain.co.ke|" .env
+        warn "Please update NEXTAUTH_SECRET in $WEBSITE_DIR/.env"
+    fi
+    
+    log "Website project setup completed"
+}
+
+# Step 4: Clone and setup Schoolars-work-bench project
+setup_scholars() {
+    log "Setting up Schoolars-work-bench project..."
+    
+    if [ ! -d "$SCHOLARS_DIR" ]; then
+        log "Cloning Schoolars-work-bench repository..."
+        git clone "$SCHOLARS_REPO" "$SCHOLARS_DIR"
+    else
+        log "Schoolars-work-bench directory exists, pulling latest changes..."
+        cd "$SCHOLARS_DIR"
+        git pull
+    fi
+    
+    cd "$SCHOLARS_DIR"
+    
+    # Setup .env
+    if [ ! -f .env ]; then
+        cp .env.example .env
+        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME_SCHOLARS|" .env
+        sed -i "s|NODE_ENV=.*|NODE_ENV=production|" .env
+        warn "Please update SESSION_SECRET, GOOGLE_CLIENT_ID, and YAHOO credentials in $SCHOLARS_DIR/.env"
+    fi
+    
+    log "Schoolars-work-bench project setup completed"
+}
+
+# Step 5: Configure Docker Compose for Website
+configure_website_docker() {
+    log "Configuring Docker Compose for Website..."
+    
+    cd "$WEBSITE_DIR"
+    
+    # Create dev-mode Dockerfile
+    cat > Dockerfile.dev << EOF
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+ENV NODE_ENV=development
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+EOF
+    
+    # Update docker-compose.yml to use dev mode
+    cat > docker-compose.yml << EOF
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "0.0.0.0:3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@172.17.0.1:5432/$DB_NAME_WEBSITE
+      - NEXTAUTH_URL=https://devmain.co.ke
+      - NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://scholars.devmain.co.ke
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+EOF
+    
+    log "Website Docker Compose configured"
+}
+
+# Step 6: Configure Docker Compose for Schoolars-work-bench
+configure_scholars_docker() {
+    log "Configuring Docker Compose for Schoolars-work-bench..."
+    
+    cd "$SCHOLARS_DIR"
+    
+    # Create npm-based Dockerfile for API server (workspace package)
+    cat > artifacts/api-server/Dockerfile.pnpm << EOF
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files (workspace package doesn't have own lock file)
+COPY package.json ./
+
+# Install dependencies using npm
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+ENV NODE_ENV=production
+EXPOSE 8080
+
+CMD ["node", "dist/index.mjs"]
+EOF
+    
+    # Create simple docker-compose.yml for API server only
+    cat > docker-compose.yml << EOF
+services:
+  api:
+    build:
+      context: ./artifacts/api-server
+      dockerfile: Dockerfile.pnpm
+    ports:
+      - "0.0.0.0:8080:8080"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@172.17.0.1:5432/$DB_NAME_SCHOLARS
+      - PORT=8080
+      - WEBSITE_URL=https://devmain.co.ke
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+EOF
+    
+    log "Schoolars-work-bench Docker Compose configured"
+}
+
+# Step 7: Configure Nginx
+configure_nginx() {
+    log "Configuring Nginx..."
+    
+    # Website Nginx config with upstream and improved settings
+    cat > /tmp/website-nginx.conf << EOF
+upstream website_backend {
+    server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name devmain.co.ke www.devmain.co.ke;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://website_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        
+        # Error handling
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_next_upstream_tries 2;
+    }
+}
+EOF
+    
+    # Scholars Nginx config with upstream and improved settings
+    cat > /tmp/scholars-nginx.conf << EOF
+upstream scholars_backend {
+    server 127.0.0.1:8080 max_fails=3 fail_timeout=30s;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name scholars.devmain.co.ke;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://scholars_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        
+        # Error handling
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_next_upstream_tries 2;
+    }
+}
+EOF
+    
+    # Install Nginx configs
+    run_root cp /tmp/website-nginx.conf /etc/nginx/sites-available/website
+    run_root cp /tmp/scholars-nginx.conf /etc/nginx/sites-available/scholars
+    run_root ln -sf /etc/nginx/sites-available/website /etc/nginx/sites-enabled/
+    run_root ln -sf /etc/nginx/sites-available/scholars /etc/nginx/sites-enabled/
+    run_root rm -f /etc/nginx/sites-enabled/default
+    
+    # Test and reload Nginx
+    run_root nginx -t
+    run_root systemctl reload nginx
+    run_root systemctl enable nginx
+    
+    log "Nginx configured"
+}
+
+# Step 8: Start Docker containers
+start_containers() {
+    log "Starting Docker containers..."
+    
+    # Start Website
+    cd "$WEBSITE_DIR"
+    docker compose up -d --build
+    
+    # Start Schoolars-work-bench
+    cd "$SCHOLARS_DIR"
+    docker compose up -d --build
+    
+    sleep 10
+    
+    log "Checking container status..."
+    docker ps
+    
+    # Verify containers are healthy
+    log "Verifying container health..."
+    sleep 20
+    
+    # Check website container
+    if curl -s http://localhost:3000 > /dev/null 2>&1; then
+        log "Website container is responding"
+    else
+        warn "Website container may not be ready yet"
+    fi
+    
+    # Check scholars container
+    if curl -s http://localhost:8080/api/health > /dev/null 2>&1; then
+        log "Scholars container is responding"
+    else
+        warn "Scholars container may not be ready yet"
+    fi
+    
+    log "Docker containers started"
+}
+
+# Step 1: Install system dependencies
+install_system_deps() {
+    log "Installing system dependencies..."
+    run_root apt update
+    run_root apt install -y postgresql postgresql-contrib nginx python3 python3-pip python3-venv build-essential curl git ufw docker.io docker-compose-plugin
+    
+    # Start and enable Docker
+    run_root systemctl start docker
+    run_root systemctl enable docker
+    
+    # Add user to docker group
+    run_root usermod -aG docker $USER
+    
+    # Install pnpm globally
+    if ! command -v pnpm &> /dev/null; then
+        log "Installing pnpm..."
+        npm install -g pnpm
+    fi
+    
+    log "System dependencies installed"
+}
+
+# Step 9: Configure UFW Firewall
+configure_firewall() {
+    log "Configuring UFW firewall..."
+    
+    # Reset UFW to default
+    run_root ufw --force reset
+    
+    # Set default policies
+    run_root ufw default deny incoming
+    run_root ufw default allow outgoing
+    
+    # Allow SSH
+    run_root ufw allow 22/tcp
+    
+    # Allow HTTP
+    run_root ufw allow 80/tcp
+    
+    # Allow HTTPS
+    run_root ufw allow 443/tcp
+    
+    # Allow Docker communication
+    run_root ufw allow from 172.16.0.0/12
+    
+    # Enable UFW
+    run_root ufw --force enable
+    
+    # Show UFW status
+    run_root ufw status verbose
+    
+    log "UFW firewall configured"
+}
+
+# Main execution
+main() {
+    log "Starting Docker-based deployment for both projects..."
+    log "Projects directory: $PROJECTS_DIR"
+    
+    # Create projects directory
+    mkdir -p "$PROJECTS_DIR"
+    
+    # Run all steps
+    install_system_deps
+    stop_existing_services
+    setup_databases
+    setup_website
+    setup_scholars
+    configure_website_docker
+    configure_scholars_docker
+    configure_nginx
+    configure_firewall
+    start_containers
+    
+    log ""
+    log "=== Docker Deployment Completed Successfully ==="
+    log ""
+    log "Website: http://devmain.co.ke"
+    log "Scholars: http://scholars.devmain.co.ke"
+    log ""
+    log "Container management:"
+    log "  cd $WEBSITE_DIR && docker-compose logs -f"
+    log "  cd $SCHOLARS_DIR && docker-compose logs -f"
+    log ""
+    log "To stop containers:"
+    log "  cd $WEBSITE_DIR && docker-compose down"
+    log "  cd $SCHOLARS_DIR && docker-compose down"
+    log ""
+    warn "IMPORTANT: Update these environment variables with production values:"
+    warn "  - $WEBSITE_DIR/.env (NEXTAUTH_SECRET)"
+    warn "  - $SCHOLARS_DIR/.env (SESSION_SECRET, GOOGLE_CLIENT_ID, YAHOO credentials)"
+    warn "  - Database password (currently: $DB_PASSWORD)"
+}
+
+main
