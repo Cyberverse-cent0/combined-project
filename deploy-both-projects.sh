@@ -1,0 +1,402 @@
+#!/bin/bash
+
+# Automated Deployment Script for Both Projects
+# Website (Next.js + Python) and Schoolars-work-bench (Node.js + React)
+# Supports Debian/Ubuntu, Arch Linux, and Fedora
+
+set -e
+
+# Source OS detection library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/website/scripts/utilities/os-detect.sh"
+
+# Detect OS
+need_sudo() { [ "$(id -u)" -ne 0 ]; }
+
+# Configuration
+PROJECTS_DIR="$HOME/projects"
+WEBSITE_DIR="$PROJECTS_DIR/website"
+SCHOLARS_DIR="$PROJECTS_DIR/schoolars-work-bench"
+WEBSITE_REPO="https://github.com/kibirastephengichigi-bit/website.git"
+SCHOLARS_REPO="https://github.com/Cyberverse-cent0/Schoolars-work-bench.git"
+DB_USER="codecrafter"
+DB_PASSWORD="${DB_PASSWORD:-change_this_secure_password}"
+DB_NAME_WEBSITE="stephenasatsa"
+DB_NAME_SCHOLARS="scholarforge"
+DEPLOYMENT_MODE="${DEPLOYMENT_MODE:-systemd}"  # Options: pm2, systemd, docker
+
+# Step 1: Install system dependencies (using OS detection library)
+install_system_deps_custom() {
+    install_system_deps
+    
+    # Install pnpm globally if not already installed by the library
+    if ! command -v pnpm &> /dev/null; then
+        log "Installing pnpm..."
+        npm install -g pnpm
+    fi
+    
+    # Install PM2 if using PM2 deployment mode
+    if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
+        if ! command -v pm2 &> /dev/null; then
+            log "Installing PM2..."
+            sudo npm install -g pm2
+        fi
+    fi
+}
+
+# Step 2: Setup PostgreSQL databases (using OS detection library)
+setup_databases_custom() {
+    setup_databases "$DB_USER" "$DB_PASSWORD" "$DB_NAME_WEBSITE" "$DB_NAME_SCHOLARS"
+}
+
+# Step 3: Clone and setup Website project
+setup_website() {
+    log "Setting up Website project..."
+    
+    if [ ! -d "$WEBSITE_DIR" ]; then
+        log "Cloning Website repository..."
+        git clone "$WEBSITE_REPO" "$WEBSITE_DIR"
+    else
+        log "Website directory exists, pulling latest changes..."
+        cd "$WEBSITE_DIR"
+        git pull
+    fi
+    
+    cd "$WEBSITE_DIR"
+    
+    # Setup .env
+    if [ ! -f .env ]; then
+        cp .env.example .env
+        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_WEBSITE|" .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://devmain.co.ke|" .env
+        warn "Please update NEXTAUTH_SECRET in $WEBSITE_DIR/.env"
+    fi
+    
+    # Install Node dependencies
+    log "Installing Website Node dependencies..."
+    npm install --legacy-peer-deps
+    
+    # Build frontend (skip if fails, will run in dev mode)
+    log "Building Website frontend..."
+    if ! npm run build; then
+        warn "Build failed, will run in development mode instead"
+        # Modify systemd service to use dev mode
+        DEV_MODE=true
+    fi
+    
+    # Setup Python backend
+    log "Setting up Python backend..."
+    cd "$WEBSITE_DIR/backend"
+    if [ ! -d venv ]; then
+        python3 -m venv venv
+    fi
+    source venv/bin/activate
+    pip install -r requirements.txt
+    deactivate
+    
+    log "Website project setup completed"
+}
+
+# Step 4: Clone and setup Schoolars-work-bench project
+setup_scholars() {
+    log "Setting up Schoolars-work-bench project..."
+    
+    if [ ! -d "$SCHOLARS_DIR" ]; then
+        log "Cloning Schoolars-work-bench repository..."
+        git clone "$SCHOLARS_REPO" "$SCHOLARS_DIR"
+    else
+        log "Schoolars-work-bench directory exists, pulling latest changes..."
+        cd "$SCHOLARS_DIR"
+        git pull
+    fi
+    
+    cd "$SCHOLARS_DIR"
+    
+    # Setup .env
+    if [ ! -f .env ]; then
+        cp .env.example .env
+        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS|" .env
+        sed -i "s|NODE_ENV=.*|NODE_ENV=production|" .env
+        warn "Please update SESSION_SECRET, GOOGLE_CLIENT_ID, and YAHOO credentials in $SCHOLARS_DIR/.env"
+    fi
+    
+    # Install dependencies with pnpm (skip build)
+    log "Installing Schoolars-work-bench dependencies..."
+    cd "$SCHOLARS_DIR"
+    pnpm install --ignore-scripts
+    
+    # Build API server only
+    cd "$SCHOLARS_DIR/artifacts/api-server"
+    pnpm install
+    pnpm build
+    
+    log "Schoolars-work-bench project setup completed"
+}
+
+# Step 5: Create systemd services or PM2 ecosystem
+create_systemd_services() {
+    if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
+        log "Creating PM2 ecosystem configuration..."
+        create_pm2_ecosystem
+    else
+        log "Creating systemd services..."
+        create_systemd_services_impl
+    fi
+}
+
+create_pm2_ecosystem() {
+    log "Setting up PM2 ecosystem for both projects..."
+    
+    # Copy ecosystem configs to projects
+    cp /home/codecrafter/Documents/combined/ecosystem.config.js "$WEBSITE_DIR/" 2>/dev/null || true
+    cp /home/codecrafter/Documents/combined/ecosystem.config.js "$SCHOLARS_DIR/" 2>/dev/null || true
+    
+    # Create PM2 startup script
+    cat > "$WEBSITE_DIR/start-pm2.sh" << 'EOF'
+#!/bin/bash
+cd /home/codecrafter/Documents/combined
+./start-pm2.sh
+EOF
+    chmod +x "$WEBSITE_DIR/start-pm2.sh"
+    
+    log "PM2 ecosystem configured"
+}
+
+create_systemd_services_impl() {
+    log "Creating systemd services..."
+    
+    # Website frontend service
+    if [ "${DEV_MODE:-false}" = "true" ]; then
+        cat > /tmp/website-frontend.service << EOF
+[Unit]
+Description=Website Frontend Next.js (Dev Mode)
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$WEBSITE_DIR
+Environment=NODE_ENV=development
+Environment=PORT=3000
+ExecStart=/usr/bin/npm run dev
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    else
+        cat > /tmp/website-frontend.service << EOF
+[Unit]
+Description=Website Frontend Next.js
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$WEBSITE_DIR
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    fi
+    
+    # Website backend service
+    cat > /tmp/website-backend.service << EOF
+[Unit]
+Description=Website Backend Python API
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$WEBSITE_DIR/backend
+Environment=PATH=$WEBSITE_DIR/backend/venv/bin
+EnvironmentFile=$WEBSITE_DIR/backend/.env
+ExecStart=$WEBSITE_DIR/backend/venv/bin/python server.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    
+    # Scholars service (API server only)
+    cat > /tmp/scholars.service << EOF
+[Unit]
+Description=ScholarForge API Server
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+WorkingDirectory=$SCHOLARS_DIR/artifacts/api-server
+Environment=NODE_ENV=production
+Environment=PORT=8080
+Environment=DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS
+ExecStart=/usr/bin/pnpm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    
+    # Install services
+    run_root cp /tmp/website-frontend.service /etc/systemd/system/
+    run_root cp /tmp/website-backend.service /etc/systemd/system/
+    run_root cp /tmp/scholars.service /etc/systemd/system/
+    run_root systemctl daemon-reload
+    
+    log "Systemd services created"
+}
+
+# Step 6: Configure Nginx
+configure_nginx() {
+    log "Configuring Nginx..."
+    
+    # Website Nginx config
+    cat > /tmp/website-nginx.conf << EOF
+server {
+    listen 80;
+    server_name devmain.co.ke www.devmain.co.ke;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOF
+    
+    # Scholars Nginx config
+    cat > /tmp/scholars-nginx.conf << EOF
+server {
+    listen 80;
+    server_name scholars.devmain.co.ke;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOF
+    
+    # Install Nginx configs
+    run_root cp /tmp/website-nginx.conf /etc/nginx/sites-available/website
+    run_root cp /tmp/scholars-nginx.conf /etc/nginx/sites-available/scholars
+    run_root ln -sf /etc/nginx/sites-available/website /etc/nginx/sites-enabled/
+    run_root ln -sf /etc/nginx/sites-available/scholars /etc/nginx/sites-enabled/
+    run_root rm -f /etc/nginx/sites-enabled/default
+    
+    # Test and reload Nginx
+    run_root nginx -t
+    run_root systemctl reload nginx
+    
+    log "Nginx configured"
+}
+
+# Step 7: Start services
+start_services() {
+    log "Starting services..."
+    
+    if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
+        log "Starting services with PM2..."
+        cd /home/codecrafter/Documents/combined
+        ./start-pm2.sh
+    else
+        run_root systemctl enable website-frontend website-backend scholars
+        run_root systemctl start website-frontend website-backend scholars
+        
+        sleep 5
+        
+        log "Checking service status..."
+        run_root systemctl status website-frontend --no-pager || true
+        run_root systemctl status website-backend --no-pager || true
+        run_root systemctl status scholars --no-pager || true
+    fi
+    
+    log "Services started"
+}
+
+# Step 8: Configure firewall (using OS detection library)
+configure_firewall_custom() {
+    configure_firewall
+}
+
+# Main execution
+main() {
+    log "Starting automated deployment for both projects..."
+    log "Projects directory: $PROJECTS_DIR"
+    log "Database user: $DB_USER"
+    log "Deployment mode: $DEPLOYMENT_MODE"
+    
+    # Detect operating system
+    detect_os
+    
+    # Create projects directory
+    mkdir -p "$PROJECTS_DIR"
+    
+    # Run all steps
+    install_system_deps_custom
+    setup_databases_custom
+    setup_website
+    setup_scholars
+    create_systemd_services
+    configure_nginx
+    configure_firewall_custom
+    start_services
+    
+    log ""
+    log "=== Deployment Completed Successfully ==="
+    log ""
+    log "Website: http://devmain.co.ke"
+    log "Scholars: http://scholars.devmain.co.ke"
+    log ""
+    
+    if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
+        log "PM2 Management:"
+        log "  cd /home/codecrafter/Documents/combined"
+        log "  pm2 status"
+        log "  pm2 logs"
+        log "  pm2 restart all"
+        log ""
+        log "View logs:"
+        log "  pm2 logs"
+    else
+        log "Service management:"
+        log "  sudo systemctl status website-frontend website-backend scholars"
+        log "  sudo systemctl restart website-frontend website-backend scholars"
+        log ""
+        log "View logs:"
+        log "  sudo journalctl -u website-frontend -f"
+        log "  sudo journalctl -u website-backend -f"
+        log "  sudo journalctl -u scholars -f"
+    fi
+    
+    log ""
+    warn "IMPORTANT: Update these environment variables with production values:"
+    warn "  - $WEBSITE_DIR/.env (NEXTAUTH_SECRET)"
+    warn "  - $SCHOLARS_DIR/.env (SESSION_SECRET, GOOGLE_CLIENT_ID, YAHOO credentials)"
+    warn "  - Database password (currently: $DB_PASSWORD)"
+}
+
+main

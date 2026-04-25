@@ -2,18 +2,13 @@
 
 # Docker-based Deployment Script for Both Projects
 # Uses Docker Compose to avoid build issues
+# Supports Debian/Ubuntu, Arch Linux, and Fedora
 
 set -e
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
-error() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
-warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+# Source OS detection library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/website/scripts/utilities/os-detect.sh"
 
 # Configuration
 PROJECTS_DIR="$HOME/projects"
@@ -25,9 +20,7 @@ DB_USER="codecrafter"
 DB_PASSWORD="${DB_PASSWORD:-change_this_secure_password}"
 DB_NAME_WEBSITE="stephenasatsa"
 DB_NAME_SCHOLARS="scholarforge"
-
-need_sudo() { [ "$(id -u)" -ne 0 ]; }
-run_root() { if need_sudo; then sudo "$@"; else "$@"; fi; }
+DEPLOYMENT_MODE="${DEPLOYMENT_MODE:-docker}"  # Options: pm2, docker
 
 # Step 1: Stop existing services
 stop_existing_services() {
@@ -44,29 +37,9 @@ stop_existing_services() {
     log "Existing services stopped"
 }
 
-# Step 2: Setup PostgreSQL databases
-setup_databases() {
-    log "Setting up PostgreSQL databases..."
-    
-    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DB_NAME_WEBSITE; then
-        sudo -u postgres psql -c "CREATE DATABASE $DB_NAME_WEBSITE;"
-        log "Created database $DB_NAME_WEBSITE"
-    fi
-    
-    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DB_NAME_SCHOLARS; then
-        sudo -u postgres psql -c "CREATE DATABASE $DB_NAME_SCHOLARS;"
-        log "Created database $DB_NAME_SCHOLARS"
-    fi
-    
-    if ! sudo -u postgres psql -c "\du" | grep -qw $DB_USER; then
-        sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
-        log "Created database user $DB_USER"
-    fi
-    
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_WEBSITE TO $DB_USER;"
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_SCHOLARS TO $DB_USER;"
-    
-    log "Database setup completed"
+# Step 2: Setup PostgreSQL databases (using OS detection library)
+setup_databases_custom() {
+    setup_databases "$DB_USER" "$DB_PASSWORD" "$DB_NAME_WEBSITE" "$DB_NAME_SCHOLARS"
 }
 
 # Step 3: Clone and setup Website project
@@ -127,8 +100,8 @@ configure_website_docker() {
     
     cd "$WEBSITE_DIR"
     
-    # Create dev-mode Dockerfile
-    cat > Dockerfile.dev << EOF
+    # Create production-mode Dockerfile for the website
+    cat > Dockerfile.prod << EOF
 FROM node:20-alpine
 
 WORKDIR /app
@@ -138,23 +111,26 @@ RUN npm install
 
 COPY . .
 
-ENV NODE_ENV=development
+# Build the application
+RUN npm run build
+
+ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
 EOF
     
-    # Update docker-compose.yml to use dev mode
+    # Update docker-compose.yml to use production mode
     cat > docker-compose.yml << EOF
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     ports:
       - "0.0.0.0:3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@172.17.0.1:5432/$DB_NAME_WEBSITE
       - NEXTAUTH_URL=https://devmain.co.ke
       - NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://scholars.devmain.co.ke
@@ -178,23 +154,29 @@ configure_scholars_docker() {
     
     cd "$SCHOLARS_DIR"
     
-    # Create npm-based Dockerfile for API server (workspace package)
+    # Create pnpm-based Dockerfile for API server (workspace package)
     cat > artifacts/api-server/Dockerfile.pnpm << EOF
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files (workspace package doesn't have own lock file)
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy root workspace files for pnpm to resolve workspace dependencies
+COPY ../../package.json ../../pnpm-lock.yaml ./
+
+# Copy api-server package.json
 COPY package.json ./
 
-# Install dependencies using npm
-RUN npm install
+# Install dependencies using pnpm from workspace root
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application (skip typecheck, build only API server)
+RUN pnpm --filter artifacts/api-server run build
 
 ENV NODE_ENV=production
 EXPOSE 8080
@@ -207,8 +189,8 @@ EOF
 services:
   api:
     build:
-      context: ./artifacts/api-server
-      dockerfile: Dockerfile.pnpm
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile.pnpm
     ports:
       - "0.0.0.0:8080:8080"
     environment:
@@ -359,58 +341,23 @@ start_containers() {
     log "Docker containers started"
 }
 
-# Step 1: Install system dependencies
-install_system_deps() {
-    log "Installing system dependencies..."
-    run_root apt update
-    run_root apt install -y postgresql postgresql-contrib nginx python3 python3-pip python3-venv build-essential curl git ufw docker.io docker-compose-plugin
+# Step 1: Install system dependencies (using OS detection library)
+install_system_deps_custom() {
+    install_system_deps
     
-    # Start and enable Docker
-    run_root systemctl start docker
-    run_root systemctl enable docker
+    # Install Docker
+    install_docker
     
-    # Add user to docker group
-    run_root usermod -aG docker $USER
-    
-    # Install pnpm globally
+    # Install pnpm globally if not already installed by the library
     if ! command -v pnpm &> /dev/null; then
         log "Installing pnpm..."
         npm install -g pnpm
     fi
-    
-    log "System dependencies installed"
 }
 
-# Step 9: Configure UFW Firewall
-configure_firewall() {
-    log "Configuring UFW firewall..."
-    
-    # Reset UFW to default
-    run_root ufw --force reset
-    
-    # Set default policies
-    run_root ufw default deny incoming
-    run_root ufw default allow outgoing
-    
-    # Allow SSH
-    run_root ufw allow 22/tcp
-    
-    # Allow HTTP
-    run_root ufw allow 80/tcp
-    
-    # Allow HTTPS
-    run_root ufw allow 443/tcp
-    
-    # Allow Docker communication
-    run_root ufw allow from 172.16.0.0/12
-    
-    # Enable UFW
-    run_root ufw --force enable
-    
-    # Show UFW status
-    run_root ufw status verbose
-    
-    log "UFW firewall configured"
+# Step 9: Configure firewall (using OS detection library)
+configure_firewall_custom() {
+    configure_firewall
 }
 
 # Main execution
@@ -418,19 +365,22 @@ main() {
     log "Starting Docker-based deployment for both projects..."
     log "Projects directory: $PROJECTS_DIR"
     
+    # Detect operating system
+    detect_os
+    
     # Create projects directory
     mkdir -p "$PROJECTS_DIR"
     
     # Run all steps
-    install_system_deps
+    install_system_deps_custom
     stop_existing_services
-    setup_databases
+    setup_databases_custom
     setup_website
     setup_scholars
     configure_website_docker
     configure_scholars_docker
     configure_nginx
-    configure_firewall
+    configure_firewall_custom
     start_containers
     
     log ""
