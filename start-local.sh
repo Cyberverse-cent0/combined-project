@@ -102,12 +102,12 @@ sleep 2
 log "Starting Website Frontend on port 3000..."
 cd "$WEBSITE_DIR"
 if [ -f ".env" ] || [ -f ".env.example" ]; then
-    nohup npm run dev > frontend.log 2>&1 &
+    nohup npm run dev -- -H 0.0.0.0 > frontend.log 2>&1 &
     FRONTEND_PID=$!
     log "Website Frontend started (PID: $FRONTEND_PID)"
 else
     warn ".env not found, starting anyway..."
-    nohup npm run dev > frontend.log 2>&1 &
+    nohup npm run dev -- -H 0.0.0.0 > frontend.log 2>&1 &
     FRONTEND_PID=$!
     log "Website Frontend started (PID: $FRONTEND_PID)"
 fi
