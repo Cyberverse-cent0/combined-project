@@ -419,8 +419,8 @@ main() {
     
     log "=== Bare Metal Deployment Completed Successfully ==="
     log ""
-    log "Website: http://devmain.co.ke"
-    log "Scholars: http://scholars.devmain.co.ke"
+    log "Website: https://$DOMAIN_NAME"
+    log "Scholars: https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME"
     log ""
     log "Service management:"
     log "  sudo systemctl status website"

@@ -145,8 +145,11 @@ setup_website() {
     if [ ! -f .env ]; then
         cp .env.example .env
         sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_WEBSITE|" .env
-        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://$DOMAIN_NAME|" .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=http://$DOMAIN_NAME|" .env
         warn "Please update NEXTAUTH_SECRET in $WEBSITE_DIR/.env"
+    else
+        # Update NEXTAUTH_URL in existing .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=http://$DOMAIN_NAME|" .env
     fi
     
     # Install Node dependencies
