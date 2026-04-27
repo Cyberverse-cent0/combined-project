@@ -56,7 +56,7 @@ install_system_deps_custom() {
     # Install pnpm globally if not already installed by the library
     if ! command -v pnpm &> /dev/null; then
         log "Installing pnpm..."
-        npm install -g pnpm
+        run_root npm install -g pnpm
     fi
 }
 
