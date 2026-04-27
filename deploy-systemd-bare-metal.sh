@@ -29,6 +29,8 @@ has_systemd() {
 }
 
 # Configuration
+DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
+SCHOLARS_SUBDOMAIN="${SCHOLARS_SUBDOMAIN:-scholars}"
 PROJECTS_DIR="/home/codecrafter/projects"
 WEBSITE_DIR="$PROJECTS_DIR/website"
 SCHOLARS_DIR="$PROJECTS_DIR/schoolars-work-bench"
@@ -108,8 +110,8 @@ PORT=8080
 DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS
 SESSION_SECRET=scholarforge-production-secret-key-2024
 NODE_ENV=development
-WEBSITE_URL=https://virus-stoning-stubborn.ngrok-free.dev
-CORS_ORIGIN=https://virus-stoning-stubborn.ngrok-free.dev
+WEBSITE_URL=https://$DOMAIN_NAME
+CORS_ORIGIN=https://$DOMAIN_NAME
 EOF
     
     log "Projects setup completed"
@@ -190,8 +192,9 @@ User=codecrafter
 WorkingDirectory=$WEBSITE_DIR
 Environment="$WEBSITE_ENV"
 Environment="DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_WEBSITE?schema=public"
-Environment="NEXTAUTH_URL=https://devmain.co.ke"
-Environment="NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://scholars.devmain.co.ke"
+Environment="NEXTAUTH_URL=https://$DOMAIN_NAME"
+Environment="NEXT_PUBLIC_SITE_URL=https://$DOMAIN_NAME"
+Environment="NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME"
 ExecStart=$WEBSITE_CMD
 Restart=always
 RestartSec=10
@@ -306,7 +309,7 @@ http {
     # Main server with path-based routing
     server {
         listen       80;
-        server_name  devmain.co.ke www.devmain.co.ke;
+        server_name  $DOMAIN_NAME www.$DOMAIN_NAME;
 
         client_max_body_size 100M;
 

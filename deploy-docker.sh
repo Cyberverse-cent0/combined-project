@@ -29,6 +29,8 @@ has_systemd() {
 }
 
 # Configuration
+DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
+SCHOLARS_SUBDOMAIN="${SCHOLARS_SUBDOMAIN:-scholars}"
 PROJECTS_DIR="$HOME/projects"
 WEBSITE_DIR="$PROJECTS_DIR/website"
 SCHOLARS_DIR="$PROJECTS_DIR/schoolars-work-bench"
@@ -128,7 +130,7 @@ setup_website() {
     if [ ! -f .env ]; then
         cp .env.example .env
         sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@postgres:5432/$DB_NAME_WEBSITE|" .env
-        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://devmain.co.ke|" .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://$DOMAIN_NAME|" .env
         warn "Please update NEXTAUTH_SECRET in $WEBSITE_DIR/.env"
     fi
     
@@ -199,8 +201,8 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@172.17.0.1:5432/$DB_NAME_WEBSITE
-      - NEXTAUTH_URL=https://devmain.co.ke
-      - NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://scholars.devmain.co.ke
+      - NEXTAUTH_URL=https://$DOMAIN_NAME
+      - NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME
     env_file:
       - .env
     restart: unless-stopped
@@ -264,7 +266,7 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@172.17.0.1:5432/$DB_NAME_SCHOLARS
       - PORT=8080
-      - WEBSITE_URL=https://devmain.co.ke
+      - WEBSITE_URL=https://$DOMAIN_NAME
     env_file:
       - .env
     restart: unless-stopped
@@ -336,7 +338,7 @@ http {
     # Main server with path-based routing
     server {
         listen       80;
-        server_name  devmain.co.ke www.devmain.co.ke;
+        server_name  $DOMAIN_NAME www.$DOMAIN_NAME;
 
         client_max_body_size 100M;
 
@@ -493,8 +495,8 @@ main() {
     log ""
     log "=== Docker Deployment Completed Successfully ==="
     log ""
-    log "Website: http://devmain.co.ke"
-    log "Scholars: http://scholars.devmain.co.ke"
+    log "Website: https://$DOMAIN_NAME"
+    log "Scholars: https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME"
     log ""
     log "Container management:"
     log "  cd $WEBSITE_DIR && docker-compose logs -f"

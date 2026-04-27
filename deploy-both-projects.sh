@@ -32,6 +32,8 @@ has_systemd() {
 }
 
 # Configuration
+DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
+SCHOLARS_PATH="${SCHOLARS_PATH:-/scholars}"
 PROJECTS_DIR="$HOME/projects"
 WEBSITE_DIR="$PROJECTS_DIR/website"
 SCHOLARS_DIR="$PROJECTS_DIR/schoolars-work-bench"
@@ -143,7 +145,7 @@ setup_website() {
     if [ ! -f .env ]; then
         cp .env.example .env
         sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_WEBSITE|" .env
-        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://devmain.co.ke|" .env
+        sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://$DOMAIN_NAME|" .env
         warn "Please update NEXTAUTH_SECRET in $WEBSITE_DIR/.env"
     fi
     
@@ -192,7 +194,11 @@ setup_scholars() {
         cp .env.example .env
         sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS|" .env
         sed -i "s|NODE_ENV=.*|NODE_ENV=production|" .env
+        sed -i "s|BASE_PATH=.*|BASE_PATH=$SCHOLARS_PATH|" .env
         warn "Please update SESSION_SECRET, GOOGLE_CLIENT_ID, and YAHOO credentials in $SCHOLARS_DIR/.env"
+    else
+        # Update BASE_PATH in existing .env
+        sed -i "s|BASE_PATH=.*|BASE_PATH=$SCHOLARS_PATH|" .env
     fi
     
     # Install dependencies with pnpm (skip build)
@@ -336,7 +342,7 @@ configure_nginx() {
     log "Configuring Nginx with path-based routing..."
     
     # Single server block with path-based routing
-    cat > /tmp/nginx.conf << 'EOF'
+    cat > /tmp/nginx.conf << EOF
 #user http;
 worker_processes  1;
 
@@ -359,9 +365,9 @@ http {
     include       mime.types;
     default_type  application/octet-stream;
 
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+    #log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+    #                  '\$status \$body_bytes_sent "\$http_referer" '
+    #                  '"\$http_user_agent" "\$http_x_forwarded_for"';
 
     #access_log  logs/access.log  main;
 
@@ -388,21 +394,21 @@ http {
     # Main server with path-based routing
     server {
         listen       80;
-        server_name  devmain.co.ke www.devmain.co.ke;
+        server_name  $DOMAIN_NAME www.$DOMAIN_NAME;
 
         client_max_body_size 100M;
 
-        # Scholars Forge under /scholars path
-        location /scholars {
+        # Scholars Forge under $SCHOLARS_PATH path
+        location $SCHOLARS_PATH {
             proxy_pass http://scholars_backend;
             proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_cache_bypass \$http_upgrade;
             
             proxy_connect_timeout 60s;
             proxy_send_timeout 60s;
@@ -416,13 +422,13 @@ http {
         location / {
             proxy_pass http://website_backend;
             proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
+            proxy_cache_bypass \$http_upgrade;
             
             proxy_connect_timeout 60s;
             proxy_send_timeout 60s;
@@ -515,8 +521,8 @@ main() {
     log ""
     log "=== Deployment Completed Successfully ==="
     log ""
-    log "Website: http://devmain.co.ke"
-    log "Scholars: http://scholars.devmain.co.ke"
+    log "Website: http://$DOMAIN_NAME"
+    log "Scholars: http://$DOMAIN_NAME$SCHOLARS_PATH"
     log ""
     
     if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
