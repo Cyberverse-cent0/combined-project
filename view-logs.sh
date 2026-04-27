@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # View active logs for all services
-# Shows frontend, admin backend, and scholars API logs in real-time
+# Shows frontend, admin backend, scholars API, and scholar forge logs in real-time
 
 set -e
 
@@ -20,21 +20,23 @@ SCHOLARS_DIR="$BASE_DIR/Schoolars-work-bench"
 FRONTEND_LOG="$WEBSITE_DIR/frontend.log"
 ADMIN_LOG="$WEBSITE_DIR/admin-backend.log"
 SCHOLARS_LOG="$SCHOLARS_DIR/artifacts/api-server/scholars-backend.log"
+SCHOLAR_FORGE_LOG="$SCHOLARS_DIR/artifacts/scholar-forge/logs/server.log"
 
 echo -e "${CYAN}=== Viewing All Service Logs ===${NC}"
-echo -e "${GREEN}Frontend:${NC}     $FRONTEND_LOG"
-echo -e "${GREEN}Admin Backend:${NC} $ADMIN_LOG"
-echo -e "${GREEN}Scholars API:${NC}  $SCHOLARS_LOG"
+echo -e "${GREEN}Frontend:${NC}       $FRONTEND_LOG"
+echo -e "${GREEN}Admin Backend:${NC}  $ADMIN_LOG"
+echo -e "${GREEN}Scholars API:${NC}   $SCHOLARS_LOG"
+echo -e "${GREEN}Scholar Forge:${NC}  $SCHOLAR_FORGE_LOG"
 echo -e "${YELLOW}Press Ctrl+C to stop viewing logs${NC}"
 echo ""
 
 # Check if multitail is available
 if command -v multitail &> /dev/null; then
-    multitail -s 3 -l "tail -f $FRONTEND_LOG" -l "tail -f $ADMIN_LOG" -l "tail -f $SCHOLARS_LOG"
+    multitail -s 4 -l "tail -f $FRONTEND_LOG" -l "tail -f $ADMIN_LOG" -l "tail -f $SCHOLARS_LOG" -l "tail -f $SCHOLAR_FORGE_LOG"
 else
     # Fallback: use tail with labels
     echo -e "${BLUE}Using tail (install multitail for better viewing: yay -S multitail)${NC}"
     echo ""
-    
-    tail -f $FRONTEND_LOG $ADMIN_LOG $SCHOLARS_LOG
+
+    tail -f $FRONTEND_LOG $ADMIN_LOG $SCHOLARS_LOG $SCHOLAR_FORGE_LOG
 fi

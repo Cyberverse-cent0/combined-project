@@ -43,12 +43,12 @@ module.exports = {
     },
     {
       name: 'scholar-forge-frontend',
-      script: 'npm',
-      args: 'run preview',
+      script: 'node',
+      args: 'server.cjs',
       cwd: '/home/codecrafter/Documents/combined/Schoolars-work-bench/artifacts/scholar-forge',
-      instances: resources.scholarForgeInstances,
-      exec_mode: 'cluster',
-      env: { NODE_ENV: 'production', PORT: 4500 },
+      instances: 1,
+      exec_mode: 'fork',
+      env: { NODE_ENV: 'production' },
       error_file: './logs/scholar-forge-error.log',
       out_file: './logs/scholar-forge-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
@@ -85,6 +85,58 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       autorestart: true,
       max_memory_restart: `${Math.floor(resources.totalMemoryGB * 0.3)}G`
+    },
+    {
+      name: 'go-password-service',
+      script: './password-service/password-service',
+      cwd: '/home/codecrafter/Documents/combined/website/backend/go-services',
+      instances: 1,
+      exec_mode: 'fork',
+      env: { PORT: 9001 },
+      error_file: './logs/go-password-service-error.log',
+      out_file: './logs/go-password-service-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      autorestart: true,
+      max_memory_restart: '512M'
+    },
+    {
+      name: 'go-telemetry-service',
+      script: './telemetry-service/telemetry-service',
+      cwd: '/home/codecrafter/Documents/combined/website/backend/go-services',
+      instances: 1,
+      exec_mode: 'fork',
+      env: { PORT: 9002 },
+      error_file: './logs/go-telemetry-service-error.log',
+      out_file: './logs/go-telemetry-service-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      autorestart: true,
+      max_memory_restart: '512M'
+    },
+    {
+      name: 'go-image-service',
+      script: './image-service/image-service',
+      cwd: '/home/codecrafter/Documents/combined/website/backend/go-services',
+      instances: 1,
+      exec_mode: 'fork',
+      env: { PORT: 9003 },
+      error_file: './logs/go-image-service-error.log',
+      out_file: './logs/go-image-service-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      autorestart: true,
+      max_memory_restart: '1G'
+    },
+    {
+      name: 'go-worker-service',
+      script: './worker-service/worker-service',
+      cwd: '/home/codecrafter/Documents/combined/website/backend/go-services',
+      instances: 1,
+      exec_mode: 'fork',
+      env: { PORT: 9004, MAX_WORKERS: 10 },
+      error_file: './logs/go-worker-service-error.log',
+      out_file: './logs/go-worker-service-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      autorestart: true,
+      max_memory_restart: '512M'
     }
   ]
 };

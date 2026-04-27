@@ -214,93 +214,133 @@ EOF
 
 # Step 7: Configure Nginx
 configure_nginx() {
-    log "Configuring Nginx..."
+    log "Configuring Nginx with path-based routing..."
     
-    # Website Nginx config with upstream and improved settings
-    cat > /tmp/website-nginx.conf << EOF
-upstream website_backend {
-    server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
-    keepalive 32;
+    # Single server block with path-based routing
+    cat > /tmp/nginx.conf << 'EOF'
+#user http;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+# Load all installed modules
+include modules.d/*.conf;
+
+events {
+    worker_connections  1024;
 }
 
-server {
-    listen 80;
-    server_name devmain.co.ke www.devmain.co.ke;
 
-    client_max_body_size 100M;
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
 
-    location / {
-        proxy_pass http://website_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-        
-        # Error handling
-        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-        proxy_next_upstream_tries 2;
+    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+    #                  '$status $body_bytes_sent "$http_referer" '
+    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    #access_log  logs/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    # Website upstream
+    upstream website_backend {
+        server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
+        keepalive 32;
+    }
+
+    # Scholars Forge upstream
+    upstream scholars_backend {
+        server 127.0.0.1:4500 max_fails=3 fail_timeout=30s;
+        keepalive 32;
+    }
+
+    # Main server with path-based routing
+    server {
+        listen       80;
+        server_name  devmain.co.ke www.devmain.co.ke;
+
+        client_max_body_size 100M;
+
+        # Scholars Forge under /scholars path
+        location /scholars {
+            proxy_pass http://scholars_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+            
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+            
+            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+            proxy_next_upstream_tries 2;
+        }
+
+        # Main website (root path)
+        location / {
+            proxy_pass http://website_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+            
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+            
+            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+            proxy_next_upstream_tries 2;
+        }
+    }
+
+    # Default localhost server (fallback)
+    server {
+        listen       80;
+        server_name  localhost;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
     }
 }
 EOF
     
-    # Scholars Nginx config with upstream and improved settings
-    cat > /tmp/scholars-nginx.conf << EOF
-upstream scholars_backend {
-    server 127.0.0.1:8080 max_fails=3 fail_timeout=30s;
-    keepalive 32;
-}
-
-server {
-    listen 80;
-    server_name scholars.devmain.co.ke;
-
-    client_max_body_size 100M;
-
-    location / {
-        proxy_pass http://scholars_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-        
-        # Error handling
-        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-        proxy_next_upstream_tries 2;
-    }
-}
-EOF
-    
-    # Install Nginx configs
-    run_root cp /tmp/website-nginx.conf /etc/nginx/sites-available/website
-    run_root cp /tmp/scholars-nginx.conf /etc/nginx/sites-available/scholars
-    run_root ln -sf /etc/nginx/sites-available/website /etc/nginx/sites-enabled/
-    run_root ln -sf /etc/nginx/sites-available/scholars /etc/nginx/sites-enabled/
-    run_root rm -f /etc/nginx/sites-enabled/default
+    # Install Nginx config
+    run_root cp /tmp/nginx.conf /etc/nginx/nginx.conf
     
     # Test and reload Nginx
     run_root nginx -t
     run_root systemctl reload nginx
     run_root systemctl enable nginx
     
-    log "Nginx configured"
+    log "Nginx configured with path-based routing"
 }
 
 # Step 8: Start Docker containers
