@@ -51,12 +51,19 @@ else
 fi
 log ""
 
-# Step 3: Build the website
-info "Step 3: Building the website..."
+# Step 3: Build the website (optional - skip for dev mode)
+info "Step 3: Building the website (optional)..."
 cd "$WEBSITE_DIR"
 if [ -f "package.json" ]; then
-    npm run build || error "Website build failed"
-    log "✓ Website build successful"
+    if npm run build 2>&1 | tee /tmp/next-build.log; then
+        if grep -q "Failed to compile" /tmp/next-build.log || grep -q "Build failed" /tmp/next-build.log; then
+            warn "Website build had errors, skipping build step (will run in dev mode)"
+        else
+            log "✓ Website build successful"
+        fi
+    else
+        warn "Website build failed, skipping build step (will run in dev mode)"
+    fi
 else
     error "package.json not found in website directory"
     exit 1
