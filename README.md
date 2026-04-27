@@ -28,6 +28,16 @@ A full-stack web application combining a Next.js website, Scholar Forge applicat
 - **Docker** 20.10+
 - **Docker Compose** 2.0+
 
+## Domain Configuration
+
+Before deploying, configure your domain name. See [DOMAIN-CONFIGURATION.md](./DOMAIN-CONFIGURATION.md) for detailed instructions.
+
+All deployment scripts accept the `DOMAIN_NAME` parameter:
+
+```bash
+DOMAIN_NAME=your-domain.com ./deploy-docker.sh
+```
+
 ## Quick Start
 
 ### Deployment Options

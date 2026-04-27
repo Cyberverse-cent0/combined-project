@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -76,7 +75,7 @@ func (c *Configurator) UpdateDomain(ngrokURL string) error {
 
 	// Parse ngrok URL to get base domain
 	baseURL := strings.TrimPrefix(ngrokURL, "https://")
-	
+
 	// Update domain configuration
 	c.envMap["DOMAIN_NAME"] = ngrokURL
 	c.envMap["WEBSITE_URL"] = ngrokURL
@@ -113,12 +112,12 @@ func (c *Configurator) SaveEnv() error {
 
 // NgrokManager handles ngrok tunnel lifecycle
 type NgrokManager struct {
-	cmd      *exec.Cmd
-	url      string
-	ready    chan struct{}
-	mu       sync.Mutex
-	ctx      context.Context
-	cancel   context.CancelFunc
+	cmd    *exec.Cmd
+	url    string
+	ready  chan struct{}
+	mu     sync.Mutex
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // NewNgrokManager creates a new ngrok manager
@@ -138,7 +137,7 @@ func (nm *NgrokManager) Start(port int) error {
 
 	// Start ngrok
 	nm.cmd = exec.CommandContext(nm.ctx, "ngrok", "http", fmt.Sprintf("%d", port))
-	
+
 	// Capture output for monitoring
 	stdout, err := nm.cmd.StdoutPipe()
 	if err != nil {
@@ -256,18 +255,18 @@ func NewWebsiteManager(configurator *Configurator) *WebsiteManager {
 // Start starts the website development server
 func (wm *WebsiteManager) Start(ctx context.Context) error {
 	log.Println("[website] Starting development server...")
-	
+
 	cmd := exec.CommandContext(ctx, "npm", "run", "dev")
 	cmd.Dir = websiteDir
-	
+
 	// Capture output
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start website: %w", err)
 	}
-	
+
 	log.Println("[website] Development server started")
 	return nil
 }
@@ -313,17 +312,17 @@ func Deploy(ctx context.Context) error {
 	go func() {
 		ngrokURL := ngrokManager.GetURL()
 		log.Printf("[config] Updating .env with ngrok URL: %s", ngrokURL)
-		
+
 		if err := configurator.UpdateDomain(ngrokURL); err != nil {
 			log.Printf("Error updating domain: %v", err)
 			return
 		}
-		
+
 		if err := configurator.SaveEnv(); err != nil {
 			log.Printf("Error saving .env: %v", err)
 			return
 		}
-		
+
 		log.Println("[config] .env file updated successfully")
 	}()
 
@@ -349,7 +348,7 @@ func main() {
 	// Handle interrupt signal
 	sigChan := make(chan os.Signal, 1)
 	// signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-	
+
 	go func() {
 		<-sigChan
 		log.Println("\nReceived interrupt signal, shutting down...")
