@@ -112,7 +112,7 @@ install_system_deps() {
     # Install pnpm globally
     if ! command -v pnpm &> /dev/null; then
         log "Installing pnpm..."
-        npm install -g pnpm
+        run_root npm install -g pnpm
     fi
     
     log "System dependencies installed"
