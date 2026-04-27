@@ -130,11 +130,14 @@ build_applications() {
     warn "Skipping build, using dev mode for Website"
     WEBSITE_MODE="development"
     
-    # Skip Scholars pnpm install to avoid workspace build OOM
-    log "Skipping Scholars pnpm install (avoiding workspace build OOM)"
-    warn "Using existing Scholars dependencies, dev mode"
+    # Install Scholars API server dependencies directly
+    log "Installing Scholars API server dependencies..."
+    cd "$SCHOLARS_DIR/artifacts/api-server"
+    npm install
+    cd "$SCHOLARS_DIR"
+    
+    warn "Using Scholars dev mode"
     SCHOLARS_MODE="development"
-    SCHOLARS_WORKDIR="$SCHOLARS_DIR"
     
     log "Dependencies installed (dev mode)"
 }
@@ -157,8 +160,9 @@ create_systemd_services() {
         SCHOLARS_CMD="/usr/bin/node dist/index.mjs"
         SCHOLARS_ENV="NODE_ENV=production"
     else
-        # Use npm to run pnpm through npx to avoid path issues
-        SCHOLARS_CMD="/usr/bin/npx pnpm --filter artifacts/api-server run dev"
+        # Direct npm run dev in the artifacts/api-server directory
+        SCHOLARS_CMD="/usr/bin/npm run dev"
+        SCHOLARS_WORKDIR="$SCHOLARS_DIR/artifacts/api-server"
         SCHOLARS_ENV="NODE_ENV=development"
     fi
     
