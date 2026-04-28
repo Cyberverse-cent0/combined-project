@@ -18,16 +18,7 @@ else
 fi
 
 # Detect if systemd is available
-has_systemd() {
-    if command -v systemctl &> /dev/null && systemctl --version &> /dev/null; then
-        # Check if systemd is actually running (not just installed)
-        if systemctl is-system-running &> /dev/null; then
-            return 0
-        fi
-    fi
-    return 1
-}
-
+#
 # Configuration
 DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
 SCHOLARS_SUBDOMAIN="${SCHOLARS_SUBDOMAIN:-scholars}"
