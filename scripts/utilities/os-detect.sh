@@ -170,7 +170,17 @@ setup_databases() {
             run_root systemctl enable postgresql
             ;;
         debian|ubuntu)
-            run_root systemctl start postgresql
+            # Detect PostgreSQL version and start the correct service
+            PG_VERSION=$(pg_config --version 2>/dev/null | awk '{print $2}' | cut -d. -f1)
+            if [ -z "$PG_VERSION" ]; then
+                # Try to detect from installed packages
+                PG_VERSION=$(dpkg -l | grep postgresql | grep -E "postgresql-[0-9]" | head -1 | awk '{print $2}' | cut -d- -f2 | cut -d. -f1)
+            fi
+            if [ -z "$PG_VERSION" ]; then
+                PG_VERSION="15"  # Default to version 15 for Debian 12
+            fi
+            log "Detected PostgreSQL version: $PG_VERSION"
+            run_root systemctl start postgresql || run_root systemctl start postgresql@$PG_VERSION-main
             ;;
     esac
     
@@ -381,6 +391,11 @@ run_root() {
     fi
 }
 
+# Check if systemd is available
+has_systemd() {
+    command -v systemctl &> /dev/null && systemctl --version &> /dev/null
+}
+
 # Export functions for use in other scripts
 export -f detect_os
 export -f update_package_lists
@@ -395,3 +410,4 @@ export -f configure_firewalld
 export -f install_docker
 export -f remove_docker
 export -f run_root
+export -f has_systemd
