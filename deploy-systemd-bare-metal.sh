@@ -148,11 +148,12 @@ build_applications() {
     # Install Scholars API server dependencies using pnpm (workspace protocol)
     log "Installing Scholars API server dependencies..."
     cd "$SCHOLARS_DIR"
-    pnpm install
+    # Skip workspace install to avoid OOM during scholar-forge build
+    # Only install API server dependencies
     cd "$SCHOLARS_DIR/artifacts/api-server"
-    pnpm install --filter @workspace/api-server
+    pnpm install --ignore-scripts
     
-    warn "Using Scholars dev mode"
+    warn "Using Scholars dev mode (skipping scholar-forge build to avoid OOM)"
     SCHOLARS_MODE="development"
     
     # Setup Python admin backend
