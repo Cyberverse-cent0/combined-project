@@ -52,7 +52,7 @@ restart_backend() {
     nohup python server.py > /tmp/backend.log 2>&1 &
     
     # Wait for backend to start
-    sleep 2
+    sleep 1
     
     if curl -s http://localhost:8000/api/health > /dev/null 2>&1; then
         print_status "Backend server started successfully on port 8000"
@@ -73,7 +73,7 @@ restart_frontend() {
     nohup npm run dev > /tmp/frontend.log 2>&1 &
     
     # Wait for frontend to start
-    sleep 5
+    sleep 2
     
     if curl -s http://localhost:3000 > /dev/null 2>&1; then
         print_status "Frontend server started successfully on port 3000"

@@ -113,8 +113,26 @@ if [ -d "$WEBSITE_DIR/.git" ]; then
 fi
 log ""
 
-# Step 6: Start the website with ngrok
-info "Step 6: Starting website with ngrok..."
+# Step 6: Setup nginx (optional)
+info "Step 6: Setting up nginx (optional)..."
+if [ -f "nginx.conf" ] && [ -f "setup-nginx.sh" ]; then
+    read -p "Do you want to setup nginx with single-domain integration? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        chmod +x setup-nginx.sh
+        if [ -n "$DOMAIN_NAME" ]; then
+            sudo DOMAIN_NAME="$DOMAIN_NAME" ./setup-nginx.sh || warn "Nginx setup failed, continuing..."
+        else
+            sudo ./setup-nginx.sh || warn "Nginx setup failed, continuing..."
+        fi
+    fi
+else
+    warn "nginx.conf or setup-nginx.sh not found, skipping nginx setup"
+fi
+log ""
+
+# Step 7: Start the website with ngrok
+info "Step 7: Starting website with ngrok..."
 cd "$PROJECT_DIR"
 if [ -f "deploy-ngrok" ]; then
     chmod +x deploy-ngrok

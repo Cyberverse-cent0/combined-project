@@ -281,129 +281,72 @@ EOF
 
 # Step 7: Configure Nginx
 configure_nginx() {
-    log "Configuring Nginx with path-based routing..."
+    log "Configuring Nginx with single-domain integration..."
     
-    # Single server block with path-based routing
-    run_root tee /etc/nginx/nginx.conf > /dev/null << 'EOF'
-#user http;
-worker_processes  1;
-
-#error_log  logs/error.log;
-#error_log  logs/error.log  notice;
-#error_log  logs/error.log  info;
-
-#pid        logs/nginx.pid;
-
-
-# Load all installed modules
-include modules.d/*.conf;
-
-events {
-    worker_connections  1024;
-}
-
-
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
-
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
-
-    #access_log  logs/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    # Website upstream
-    upstream website_backend {
-        server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
-        keepalive 32;
-    }
-
-    # Scholars Forge upstream
-    upstream scholars_backend {
-        server 127.0.0.1:4500 max_fails=3 fail_timeout=30s;
-        keepalive 32;
-    }
-
-    # Main server with path-based routing
-    server {
-        listen       80;
-        server_name  $DOMAIN_NAME www.$DOMAIN_NAME;
-
-        client_max_body_size 100M;
-
-        # Scholars Forge under /scholars path
-        location /scholars {
-            proxy_pass http://scholars_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
-            
-            proxy_connect_timeout 60s;
-            proxy_send_timeout 60s;
-            proxy_read_timeout 60s;
-            
-            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-            proxy_next_upstream_tries 2;
-        }
-
-        # Main website (root path)
-        location / {
-            proxy_pass http://website_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
-            
-            proxy_connect_timeout 60s;
-            proxy_send_timeout 60s;
-            proxy_read_timeout 60s;
-            
-            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-            proxy_next_upstream_tries 2;
-        }
-    }
-
-    # Default localhost server (fallback)
-    server {
-        listen       80;
-        server_name  localhost;
-
-        location / {
-            root   /usr/share/nginx/html;
-            index  index.html index.htm;
-        }
-
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   /usr/share/nginx/html;
-        }
-    }
-}
-EOF
+    # Use the new nginx configuration
+    NGINX_CONF_SOURCE="$SCRIPT_DIR/nginx.conf"
+    NGINX_CONF_DEST="/etc/nginx/sites-available/combined"
+    NGINX_CONF_ENABLED="/etc/nginx/sites-enabled/combined"
     
+    if [ ! -f "$NGINX_CONF_SOURCE" ]; then
+        error "nginx.conf not found at $NGINX_CONF_SOURCE"
+        exit 1
+    fi
+    
+    # Install nginx if not present
+    if ! command -v nginx &> /dev/null; then
+        log "Installing nginx..."
+        run_root apt update
+        run_root apt install -y nginx
+    fi
+    
+    # Create certbot directory for Let's Encrypt
+    run_root mkdir -p /var/www/certbot
+    run_root chown -R www-data:www-data /var/www/certbot
+    
+    # Backup existing nginx configuration
+    if [ -f "$NGINX_CONF_DEST" ]; then
+        log "Backing up existing nginx configuration..."
+        run_root cp "$NGINX_CONF_DEST" "${NGINX_CONF_DEST}.backup.$(date +%Y%m%d_%H%M%S)"
+    fi
+    
+    # Copy and customize nginx configuration
+    log "Installing nginx configuration..."
+    sed "s/your-domain.com/$DOMAIN_NAME/g" "$NGINX_CONF_SOURCE" | run_root tee "$NGINX_CONF_DEST" > /dev/null
+    
+    # Create symbolic link to enable site
+    log "Enabling site..."
+    run_root ln -sf "$NGINX_CONF_DEST" "$NGINX_CONF_ENABLED"
+    
+    # Remove default nginx site if it exists
+    if [ -L "/etc/nginx/sites-enabled/default" ]; then
+        log "Removing default nginx site..."
+        run_root rm /etc/nginx/sites-enabled/default
+    fi
+    
+    # Test nginx configuration
+    log "Testing nginx configuration..."
     run_root nginx -t
-    run_root systemctl reload nginx
+    
+    # Restart nginx
+    log "Restarting nginx..."
+    run_root systemctl restart nginx
     run_root systemctl enable nginx
     
-    log "Nginx configured with path-based routing"
+    log "Nginx configured with single-domain integration"
+    log "Service endpoints:"
+    log "  - Main website: http://$DOMAIN_NAME"
+    log "  - Admin panel: http://$DOMAIN_NAME/admin"
+    log "  - Scholar Forge: http://$DOMAIN_NAME/scholars"
+    log "  - Admin API: http://$DOMAIN_NAME/api/"
+    log "  - Scholars API: http://$DOMAIN_NAME/scholars-api/"
+    
+    # Ask about SSL certificate
+    log ""
+    log "To set up SSL with Let's Encrypt, run:"
+    log "  sudo ./setup-nginx.sh"
+    log "or manually:"
+    log "  sudo certbot --nginx -d $DOMAIN_NAME -d www.$DOMAIN_NAME"
 }
 
 # Step 8: Configure firewall (using OS detection library)
