@@ -70,9 +70,15 @@ setup_projects() {
         log "Cloning Website repository..."
         git clone https://github.com/kibirastephengichigi-bit/website.git "$WEBSITE_DIR"
     else
-        log "Website directory exists, pulling latest changes..."
-        cd "$WEBSITE_DIR"
-        git pull origin main
+        if [ -d "$WEBSITE_DIR/.git" ]; then
+            log "Website directory exists, pulling latest changes..."
+            cd "$WEBSITE_DIR"
+            git pull origin main || git pull origin master || warn "Failed to pull website changes"
+        else
+            warn "Website directory exists but is not a git repository, re-cloning..."
+            rm -rf "$WEBSITE_DIR"
+            git clone https://github.com/kibirastephengichigi-bit/website.git "$WEBSITE_DIR"
+        fi
     fi
     
     # Setup .env for website
@@ -90,9 +96,15 @@ EOF
         log "Cloning Scholars-work-bench repository..."
         git clone https://github.com/Cyberverse-cent0/Schoolars-work-bench.git "$SCHOLARS_DIR"
     else
-        log "Scholars-work-bench directory exists, pulling latest changes..."
-        cd "$SCHOLARS_DIR"
-        git pull origin main
+        if [ -d "$SCHOLARS_DIR/.git" ]; then
+            log "Scholars-work-bench directory exists, pulling latest changes..."
+            cd "$SCHOLARS_DIR"
+            git pull origin main || git pull origin master || warn "Failed to pull scholars changes"
+        else
+            warn "Scholars-work-bench directory exists but is not a git repository, re-cloning..."
+            rm -rf "$SCHOLARS_DIR"
+            git clone https://github.com/Cyberverse-cent0/Schoolars-work-bench.git "$SCHOLARS_DIR"
+        fi
     fi
     
     # Setup .env for scholars
