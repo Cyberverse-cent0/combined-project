@@ -8,7 +8,7 @@ function show_help() {
     echo "Usage: ./main.sh [command]"
     echo ""
     echo "Commands:"
-    echo "  dev          Start both Next.js and Python backend in development mode"
+    echo "  dev          Start Next.js, Python backend, and Scholar Forge in development mode"
     echo "  build        Build the entire project for production"
     echo "  db:push      Push database schema changes (Drizzle)"
     echo "  db:studio    Open Drizzle Studio"
@@ -19,9 +19,10 @@ function show_help() {
 
 function dev() {
     echo "Starting development environment..."
-    # Run Next.js and Python in parallel
+    # Run Next.js, Python, and Scholar Forge in parallel
     (cd website && npm run dev) & \
-    (cd backend && source venv/bin/activate && python server.py)
+    (cd backend && source venv/bin/activate && python server.py) & \
+    (cd Schoolars-work-bench && ./start.sh)
 }
 
 function build() {

@@ -1,0 +1,19 @@
+[Unit]
+Description=Stephen Asatsa Website Frontend (Next.js)
+After=network.target website-backend.service
+
+[Service]
+Type=simple
+User=codecrafter
+Group=codecrafter
+WorkingDirectory=/home/codecrafter/combined/website
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/codecrafter/combined/logs/frontend.log
+StandardError=append:/home/codecrafter/combined/logs/frontend-error.log
+
+[Install]
+WantedBy=multi-user.target
