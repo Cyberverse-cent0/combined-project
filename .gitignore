@@ -1,1 +1,3 @@
 service-pids.txt
+website/.next/
+website/backend/venv/
