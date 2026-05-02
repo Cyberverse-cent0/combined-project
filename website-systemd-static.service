@@ -1,0 +1,18 @@
+[Unit]
+Description=Stephen Asatsa Website (Static Files)
+After=network.target
+
+[Service]
+Type=simple
+User=codecrafter
+Group=codecrafter
+WorkingDirectory=/home/codecrafter/combined-project/website
+Environment=PORT=3000
+ExecStart=/usr/bin/python3 -m http.server 3000
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/codecrafter/combined-project/logs/static.log
+StandardError=append:/home/codecrafter/combined-project/logs/static-error.log
+
+[Install]
+WantedBy=multi-user.target

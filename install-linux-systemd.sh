@@ -39,34 +39,95 @@ check_root() {
     fi
 }
 
+detect_project_structure() {
+    print_info "Detecting project structure..."
+    
+    # Reset detection flags
+    HAS_NEXTJS=false
+    HAS_BACKEND=false
+    HAS_STATIC_FILES=false
+    PROJECT_TYPE="unknown"
+    
+    # Check for Next.js application
+    if [ -f "$PROJECT_DIR/website/package.json" ] && [ -f "$PROJECT_DIR/website/next.config.ts" ]; then
+        HAS_NEXTJS=true
+        PROJECT_TYPE="nextjs"
+        print_info "Next.js application detected."
+    elif [ -f "$PROJECT_DIR/website/package.json" ]; then
+        HAS_NEXTJS=true
+        PROJECT_TYPE="nodejs"
+        print_info "Node.js application detected."
+    fi
+    
+    # Check for backend
+    if [ -d "$PROJECT_DIR/website/backend" ] && [ -f "$PROJECT_DIR/website/backend/server.py" ]; then
+        HAS_BACKEND=true
+        print_info "Python backend detected."
+    fi
+    
+    # Check for static files
+    if [ -d "$PROJECT_DIR/website/public" ] || [ -d "$PROJECT_DIR/website/out" ] || [ -f "$PROJECT_DIR/website/index.html" ]; then
+        HAS_STATIC_FILES=true
+        print_info "Static files detected."
+    fi
+    
+    # Determine overall project type
+    if [ "$PROJECT_TYPE" = "unknown" ] && [ "$HAS_STATIC_FILES" = true ]; then
+        PROJECT_TYPE="static"
+        print_info "Project type: Static site"
+    elif [ "$HAS_NEXTJS" = true ]; then
+        print_info "Project type: Next.js application"
+    else
+        print_warning "Unable to determine project type. Will attempt minimal setup."
+        PROJECT_TYPE="minimal"
+    fi
+    
+    echo "Project Structure Analysis:"
+    echo "  - Next.js: $HAS_NEXTJS"
+    echo "  - Backend: $HAS_BACKEND"
+    echo "  - Static Files: $HAS_STATIC_FILES"
+    echo "  - Project Type: $PROJECT_TYPE"
+    echo ""
+}
+
 check_dependencies() {
     print_info "Checking dependencies..."
     
-    # Check for Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ first."
-        exit 1
+    # Check for Node.js (only needed for Next.js or Node.js apps)
+    if [ "$HAS_NEXTJS" = true ]; then
+        if ! command -v node &> /dev/null; then
+            print_error "Node.js is not installed. Please install Node.js 18+ first."
+            exit 1
+        fi
+        
+        if ! command -v npm &> /dev/null; then
+            print_error "npm is not installed. Please install npm first."
+            exit 1
+        fi
     fi
     
-    # Check for npm
-    if ! command -v npm &> /dev/null; then
-        print_error "npm is not installed. Please install npm first."
-        exit 1
+    # Check for Python 3 (only needed for backend)
+    if [ "$HAS_BACKEND" = true ]; then
+        if ! command -v python3 &> /dev/null; then
+            print_error "Python 3 is not installed. Please install Python 3.8+ first."
+            exit 1
+        fi
+        
+        if ! command -v pip3 &> /dev/null; then
+            print_error "pip3 is not installed. Please install pip3 first."
+            exit 1
+        fi
     fi
     
-    # Check for Python 3
-    if ! command -v python3 &> /dev/null; then
-        print_error "Python 3 is not installed. Please install Python 3.8+ first."
-        exit 1
+    # Check for nginx or python3 for static serving
+    if [ "$PROJECT_TYPE" = "static" ]; then
+        if ! command -v nginx &> /dev/null && ! command -v python3 &> /dev/null; then
+            print_error "Neither nginx nor python3 is available for serving static files."
+            exit 1
+        fi
     fi
     
-    # Check for pip3
-    if ! command -v pip3 &> /dev/null; then
-        print_error "pip3 is not installed. Please install pip3 first."
-        exit 1
-    fi
-    
-    print_info "All dependencies are installed."
+    print_info "Required dependencies are installed."
 }
 
 setup_directories() {
@@ -108,6 +169,11 @@ install_python_dependencies() {
 }
 
 install_node_dependencies() {
+    if [ ! -f "$PROJECT_DIR/website/package.json" ]; then
+        print_warning "package.json not found in website directory. Skipping Node.js dependencies installation."
+        return 0
+    fi
+    
     print_info "Installing Node.js dependencies..."
     
     cd "$PROJECT_DIR/website"
@@ -152,39 +218,73 @@ EOF
 }
 
 install_systemd_services() {
-    print_info "Installing systemd services..."
+    print_info "Installing systemd services for $PROJECT_TYPE..."
     
-    # Copy frontend service file
-    cp "$PROJECT_DIR/website-systemd-frontend.service" "$SYSTEMD_DIR/website-frontend.service"
-    
-    # Copy backend service file only if backend directory exists
-    if [ -d "$PROJECT_DIR/website/backend" ]; then
-        cp "$PROJECT_DIR/website-systemd-backend.service" "$SYSTEMD_DIR/website-backend.service"
-        systemctl enable website-backend.service
-    else
-        print_warning "Backend directory not found. Skipping backend service installation."
-    fi
+    # Install services based on project type
+    case "$PROJECT_TYPE" in
+        "nextjs"|"nodejs")
+            # Next.js or Node.js application
+            cp "$PROJECT_DIR/website-systemd-frontend.service" "$SYSTEMD_DIR/website-frontend.service"
+            systemctl enable website-frontend.service
+            
+            if [ "$HAS_BACKEND" = true ]; then
+                cp "$PROJECT_DIR/website-systemd-backend.service" "$SYSTEMD_DIR/website-backend.service"
+                systemctl enable website-backend.service
+            fi
+            ;;
+        "static")
+            # Static files
+            cp "$PROJECT_DIR/website-systemd-static.service" "$SYSTEMD_DIR/website-static.service"
+            systemctl enable website-static.service
+            ;;
+        "minimal")
+            # Minimal setup - try static serving
+            if [ "$HAS_STATIC_FILES" = true ]; then
+                cp "$PROJECT_DIR/website-systemd-static.service" "$SYSTEMD_DIR/website-static.service"
+                systemctl enable website-static.service
+            else
+                print_error "No suitable service configuration found for minimal project structure."
+                print_info "Please ensure your project has either:"
+                print_info "  - A Next.js application (package.json + next.config.ts)"
+                print_info "  - Static files (public/ or out/ directory or index.html)"
+                exit 1
+            fi
+            ;;
+        *)
+            print_error "Unknown project type: $PROJECT_TYPE"
+            exit 1
+            ;;
+    esac
     
     # Reload systemd
     systemctl daemon-reload
-    
-    # Enable frontend service
-    systemctl enable website-frontend.service
     
     print_info "Systemd services installed and enabled."
 }
 
 start_services() {
-    print_info "Starting services..."
+    print_info "Starting services for $PROJECT_TYPE..."
     
-    # Start backend first if it exists
-    if [ -d "$PROJECT_DIR/website/backend" ]; then
-        systemctl start website-backend.service
-        sleep 3
-    fi
-    
-    # Start frontend
-    systemctl start website-frontend.service
+    # Start services based on project type
+    case "$PROJECT_TYPE" in
+        "nextjs"|"nodejs")
+            # Start backend first if it exists
+            if [ "$HAS_BACKEND" = true ]; then
+                systemctl start website-backend.service
+                sleep 3
+            fi
+            # Start frontend
+            systemctl start website-frontend.service
+            ;;
+        "static"|"minimal")
+            # Start static file server
+            systemctl start website-static.service
+            ;;
+        *)
+            print_error "Cannot start services for unknown project type: $PROJECT_TYPE"
+            exit 1
+            ;;
+    esac
     
     print_info "Services started."
 }
@@ -193,29 +293,48 @@ check_services() {
     print_info "Checking service status..."
     
     echo ""
-    if [ -d "$PROJECT_DIR/website/backend" ]; then
-        echo "Backend Service Status:"
-        systemctl status website-backend.service --no-pager || true
-    else
-        echo "Backend Service: Not installed (backend directory not found)"
-    fi
-    
-    echo ""
-    echo "Frontend Service Status:"
-    systemctl status website-frontend.service --no-pager || true
+    case "$PROJECT_TYPE" in
+        "nextjs"|"nodejs")
+            if [ "$HAS_BACKEND" = true ]; then
+                echo "Backend Service Status:"
+                systemctl status website-backend.service --no-pager || true
+                echo ""
+            fi
+            echo "Frontend Service Status:"
+            systemctl status website-frontend.service --no-pager || true
+            ;;
+        "static"|"minimal")
+            echo "Static File Server Status:"
+            systemctl status website-static.service --no-pager || true
+            ;;
+        *)
+            print_error "Cannot check services for unknown project type: $PROJECT_TYPE"
+            return 1
+            ;;
+    esac
     
     echo ""
     print_info "To view logs, use:"
-    if [ -d "$PROJECT_DIR/website/backend" ]; then
-        echo "  sudo journalctl -u website-backend.service -f"
-    fi
-    echo "  sudo journalctl -u website-frontend.service -f"
-    echo ""
-    echo "Or check log files:"
-    if [ -d "$PROJECT_DIR/website/backend" ]; then
-        echo "  tail -f $LOGS_DIR/backend.log"
-    fi
-    echo "  tail -f $LOGS_DIR/frontend.log"
+    case "$PROJECT_TYPE" in
+        "nextjs"|"nodejs")
+            if [ "$HAS_BACKEND" = true ]; then
+                echo "  sudo journalctl -u website-backend.service -f"
+            fi
+            echo "  sudo journalctl -u website-frontend.service -f"
+            echo ""
+            echo "Or check log files:"
+            if [ "$HAS_BACKEND" = true ]; then
+                echo "  tail -f $LOGS_DIR/backend.log"
+            fi
+            echo "  tail -f $LOGS_DIR/frontend.log"
+            ;;
+        "static"|"minimal")
+            echo "  sudo journalctl -u website-static.service -f"
+            echo ""
+            echo "Or check log files:"
+            echo "  tail -f $LOGS_DIR/static.log"
+            ;;
+    esac
 }
 
 setup_nginx() {
@@ -250,6 +369,7 @@ main() {
     echo ""
     
     check_root
+    detect_project_structure
     check_dependencies
     setup_directories
     install_python_dependencies
@@ -264,19 +384,36 @@ main() {
     print_info "Installation completed successfully!"
     echo ""
     echo "Service Management Commands:"
-    echo "  sudo systemctl start website-backend.service    # Start backend"
-    echo "  sudo systemctl stop website-backend.service     # Stop backend"
-    echo "  sudo systemctl restart website-backend.service  # Restart backend"
-    echo "  sudo systemctl status website-backend.service  # Check status"
-    echo ""
-    echo "  sudo systemctl start website-frontend.service   # Start frontend"
-    echo "  sudo systemctl stop website-frontend.service    # Stop frontend"
-    echo "  sudo systemctl restart website-frontend.service # Restart frontend"
-    echo "  sudo systemctl status website-frontend.service # Check status"
-    echo ""
-    echo "Website will be available at:"
-    echo "  Frontend: http://localhost:$FRONTEND_PORT"
-    echo "  Backend:  http://localhost:$BACKEND_PORT"
+    case "$PROJECT_TYPE" in
+        "nextjs"|"nodejs")
+            if [ "$HAS_BACKEND" = true ]; then
+                echo "  sudo systemctl start website-backend.service    # Start backend"
+                echo "  sudo systemctl stop website-backend.service     # Stop backend"
+                echo "  sudo systemctl restart website-backend.service  # Restart backend"
+                echo "  sudo systemctl status website-backend.service  # Check status"
+                echo ""
+            fi
+            echo "  sudo systemctl start website-frontend.service   # Start frontend"
+            echo "  sudo systemctl stop website-frontend.service    # Stop frontend"
+            echo "  sudo systemctl restart website-frontend.service # Restart frontend"
+            echo "  sudo systemctl status website-frontend.service # Check status"
+            echo ""
+            echo "Website will be available at:"
+            echo "  Frontend: http://localhost:$FRONTEND_PORT"
+            if [ "$HAS_BACKEND" = true ]; then
+                echo "  Backend:  http://localhost:$BACKEND_PORT"
+            fi
+            ;;
+        "static"|"minimal")
+            echo "  sudo systemctl start website-static.service     # Start static server"
+            echo "  sudo systemctl stop website-static.service      # Stop static server"
+            echo "  sudo systemctl restart website-static.service   # Restart static server"
+            echo "  sudo systemctl status website-static.service   # Check status"
+            echo ""
+            echo "Website will be available at:"
+            echo "  http://localhost:$FRONTEND_PORT"
+            ;;
+    esac
     echo ""
 }
 
