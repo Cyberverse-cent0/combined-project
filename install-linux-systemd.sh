@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-PROJECT_DIR="/home/codecrafter/combined"
+PROJECT_DIR="/home/codecrafter/combined-project"
 SERVICE_USER="codecrafter"
 FRONTEND_PORT=3000
 BACKEND_PORT=8000
