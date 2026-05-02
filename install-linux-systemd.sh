@@ -80,6 +80,11 @@ setup_directories() {
 }
 
 install_python_dependencies() {
+    if [ ! -d "$PROJECT_DIR/website/backend" ]; then
+        print_warning "Backend directory not found. Skipping Python backend installation."
+        return 0
+    fi
+    
     print_info "Installing Python dependencies..."
     
     cd "$PROJECT_DIR/website/backend"
@@ -122,7 +127,7 @@ setup_environment_files() {
     print_info "Setting up environment files..."
     
     # Backend .env
-    if [ ! -f "$PROJECT_DIR/website/backend/.env" ]; then
+    if [ -d "$PROJECT_DIR/website/backend" ] && [ ! -f "$PROJECT_DIR/website/backend/.env" ]; then
         print_info "Creating backend .env file..."
         cat > "$PROJECT_DIR/website/backend/.env" << EOF
 # Backend Configuration
@@ -152,14 +157,18 @@ install_systemd_services() {
     # Copy frontend service file
     cp "$PROJECT_DIR/website-systemd-frontend.service" "$SYSTEMD_DIR/website-frontend.service"
     
-    # Copy backend service file
-    cp "$PROJECT_DIR/website-systemd-backend.service" "$SYSTEMD_DIR/website-backend.service"
+    # Copy backend service file only if backend directory exists
+    if [ -d "$PROJECT_DIR/website/backend" ]; then
+        cp "$PROJECT_DIR/website-systemd-backend.service" "$SYSTEMD_DIR/website-backend.service"
+        systemctl enable website-backend.service
+    else
+        print_warning "Backend directory not found. Skipping backend service installation."
+    fi
     
     # Reload systemd
     systemctl daemon-reload
     
-    # Enable services
-    systemctl enable website-backend.service
+    # Enable frontend service
     systemctl enable website-frontend.service
     
     print_info "Systemd services installed and enabled."
@@ -168,9 +177,11 @@ install_systemd_services() {
 start_services() {
     print_info "Starting services..."
     
-    # Start backend first
-    systemctl start website-backend.service
-    sleep 3
+    # Start backend first if it exists
+    if [ -d "$PROJECT_DIR/website/backend" ]; then
+        systemctl start website-backend.service
+        sleep 3
+    fi
     
     # Start frontend
     systemctl start website-frontend.service
@@ -182,8 +193,12 @@ check_services() {
     print_info "Checking service status..."
     
     echo ""
-    echo "Backend Service Status:"
-    systemctl status website-backend.service --no-pager || true
+    if [ -d "$PROJECT_DIR/website/backend" ]; then
+        echo "Backend Service Status:"
+        systemctl status website-backend.service --no-pager || true
+    else
+        echo "Backend Service: Not installed (backend directory not found)"
+    fi
     
     echo ""
     echo "Frontend Service Status:"
@@ -191,11 +206,15 @@ check_services() {
     
     echo ""
     print_info "To view logs, use:"
-    echo "  sudo journalctl -u website-backend.service -f"
+    if [ -d "$PROJECT_DIR/website/backend" ]; then
+        echo "  sudo journalctl -u website-backend.service -f"
+    fi
     echo "  sudo journalctl -u website-frontend.service -f"
     echo ""
     echo "Or check log files:"
-    echo "  tail -f $LOGS_DIR/backend.log"
+    if [ -d "$PROJECT_DIR/website/backend" ]; then
+        echo "  tail -f $LOGS_DIR/backend.log"
+    fi
     echo "  tail -f $LOGS_DIR/frontend.log"
 }
 
