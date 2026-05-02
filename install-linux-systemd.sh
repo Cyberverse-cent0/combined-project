@@ -39,6 +39,32 @@ check_root() {
     fi
 }
 
+check_broken_gitlink() {
+    if ! command -v git &> /dev/null; then
+        return 0
+    fi
+
+    if [ ! -d "$PROJECT_DIR/.git" ] && [ ! -f "$PROJECT_DIR/.git" ]; then
+        return 0
+    fi
+
+    local website_mode
+    website_mode=$(git -C "$PROJECT_DIR" ls-files --stage website 2>/dev/null | awk 'NR==1 {print $1}')
+
+    if [ "$website_mode" = "160000" ] && [ ! -f "$PROJECT_DIR/.gitmodules" ]; then
+        print_error "The 'website' directory is stored as a git submodule/gitlink, but .gitmodules is missing."
+        print_error "The real frontend files were not checked out, so deployment cannot continue safely."
+        echo ""
+        echo "Fix options:"
+        echo "  1. Re-clone with the correct repository state that includes the full website files."
+        echo "  2. If 'website' should be a normal folder, recommit it as regular files and pull again."
+        echo "  3. If 'website' should be a submodule, restore .gitmodules and run:"
+        echo "     git submodule sync --recursive"
+        echo "     git submodule update --init --recursive"
+        exit 1
+    fi
+}
+
 detect_project_structure() {
     print_info "Detecting project structure..."
     
@@ -372,6 +398,7 @@ main() {
     echo ""
     
     check_root
+    check_broken_gitlink
     detect_project_structure
     check_dependencies
     setup_directories
