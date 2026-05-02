@@ -9,6 +9,7 @@ Group=codecrafter
 WorkingDirectory=/home/codecrafter/combined/website
 Environment=NODE_ENV=production
 Environment=PORT=3000
+Environment=PATH=/usr/bin:/usr/local/bin
 ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
