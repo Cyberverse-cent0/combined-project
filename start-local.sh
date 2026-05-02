@@ -18,7 +18,7 @@ error() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
 warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 info() { printf "${BLUE}[INFO]${NC} %s\n" "$1"; }
 
-BASE_DIR="/home/codecrafter/Documents/combined"
+BASE_DIR="/home/kopen/combined"
 WEBSITE_DIR="$BASE_DIR/website"
 SCHOLARS_DIR="$BASE_DIR/Schoolars-work-bench"
 

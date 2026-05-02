@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-BASE_DIR="/home/codecrafter/Documents/combined"
+BASE_DIR="/home/kopen/combined"
 WEBSITE_DIR="$BASE_DIR/website"
 SCHOLARS_DIR="$BASE_DIR/Schoolars-work-bench"
 

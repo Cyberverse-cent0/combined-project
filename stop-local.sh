@@ -18,7 +18,7 @@ error() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
 warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
 info() { printf "${BLUE}[INFO]${NC} %s\n" "$1"; }
 
-BASE_DIR="/home/codecrafter/Documents/combined"
+BASE_DIR="/home/kopen/combined"
 
 # Check if PM2 is running and stop it first
 if command -v pm2 &> /dev/null; then

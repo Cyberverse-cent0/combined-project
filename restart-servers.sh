@@ -48,7 +48,7 @@ restart_backend() {
     kill_port 8000 "Backend"
     
     # Start backend
-    cd /home/codecrafter/Documents/combined/website/backend
+    cd /home/kopen/combined/website/backend
     nohup python server.py > /tmp/backend.log 2>&1 &
     
     # Wait for backend to start
@@ -69,7 +69,7 @@ restart_frontend() {
     kill_port 3000 "Frontend"
     
     # Start frontend
-    cd /home/codecrafter/Documents/combined/website
+    cd /home/kopen/combined/website
     nohup npm run dev > /tmp/frontend.log 2>&1 &
     
     # Wait for frontend to start
@@ -99,9 +99,9 @@ restart_docker() {
     fi
     
     # Restart containers in website directory
-    if [ -f "/home/codecrafter/Documents/combined/website/docker-compose.yml" ]; then
+    if [ -f "/home/kopen/combined/website/docker-compose.yml" ]; then
         print_status "Restarting website docker containers..."
-        cd /home/codecrafter/Documents/combined/website
+        cd /home/kopen/combined/website
         
         if command -v docker-compose &> /dev/null; then
             docker-compose restart
@@ -113,9 +113,9 @@ restart_docker() {
     fi
     
     # Restart containers in Schoolars-work-bench directory
-    if [ -f "/home/codecrafter/Documents/combined/Schoolars-work-bench/docker-compose.yml" ]; then
+    if [ -f "/home/kopen/combined/Schoolars-work-bench/docker-compose.yml" ]; then
         print_status "Restarting Schoolars-work-bench docker containers..."
-        cd /home/codecrafter/Documents/combined/Schoolars-work-bench
+        cd /home/kopen/combined/Schoolars-work-bench
         
         if command -v docker-compose &> /dev/null; then
             docker-compose restart
