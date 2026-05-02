@@ -1,0 +1,851 @@
+"use client";
+
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Award,
+  Briefcase,
+  Copy,
+  FileText,
+  Globe,
+  Plus,
+  RefreshCw,
+  Save,
+  Settings,
+  Trash2,
+  Video,
+} from "lucide-react";
+
+import { api } from "@/components/api/client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  getFallbackSiteContent,
+  normalizeAwards,
+  normalizeGrants,
+  normalizeMedia,
+  normalizeOverview,
+  normalizeProjects,
+  normalizePublications,
+  normalizeTalks,
+  serializeOverview,
+  type ManagedAward,
+  type ManagedGrant,
+  type ManagedMedia,
+  type ManagedProject,
+  type ManagedPublication,
+  type ManagedTalk,
+  type ResearchHubOverview,
+  type ResearchHubSiteContent,
+} from "@/components/research-hub/research-hub-content";
+
+type SectionId = "overview" | "projects" | "publications" | "grants" | "talks" | "awards" | "media";
+type ManagedItem = ManagedProject | ManagedPublication | ManagedGrant | ManagedTalk | ManagedAward | ManagedMedia;
+
+const sections: Array<{ id: SectionId; label: string; icon: any; description: string }> = [
+  { id: "overview", label: "Overview", icon: Settings, description: "Edit the hero, mission, impact cards, and focus areas for the page." },
+  { id: "projects", label: "Projects", icon: Briefcase, description: "Manage project cards, team details, research methods, and publishing state." },
+  { id: "publications", label: "Publications", icon: FileText, description: "Edit citation content, document links, keywords, and display order." },
+  { id: "grants", label: "Grants", icon: FileText, description: "Track funders, amounts, dates, investigators, and external links." },
+  { id: "talks", label: "Talks", icon: Globe, description: "Control invited talks and conference talks with descriptions and links." },
+  { id: "awards", label: "Awards", icon: Award, description: "Maintain recognition items with organizations, categories, and references." },
+  { id: "media", label: "Media", icon: Video, description: "Manage recordings, interviews, and media appearances shown on the hub." },
+];
+
+function parseLines(value: string) {
+  return value.split("\n").map((item) => item.trim()).filter(Boolean);
+}
+
+function joinLines(value?: string[]) {
+  return Array.isArray(value) ? value.join("\n") : "";
+}
+
+function parseTeam(value: string) {
+  return parseLines(value).map((line) => {
+    const [name = "", role = "", affiliation = ""] = line.split("|").map((part) => part.trim());
+    return { name, role, affiliation };
+  });
+}
+
+function joinTeam(team?: Array<{ name: string; role: string; affiliation?: string }>) {
+  return (team || []).map((member) => [member.name, member.role, member.affiliation || ""].filter(Boolean).join(" | ")).join("\n");
+}
+
+function nextId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function ResearchHubManager() {
+  const [activeSection, setActiveSection] = useState<SectionId>("overview");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [siteContent, setSiteContent] = useState<ResearchHubSiteContent>(getFallbackSiteContent());
+  const [overview, setOverview] = useState<ResearchHubOverview>(normalizeOverview(getFallbackSiteContent()));
+  const [projects, setProjects] = useState<ManagedProject[]>([]);
+  const [publications, setPublications] = useState<ManagedPublication[]>([]);
+  const [grants, setGrants] = useState<ManagedGrant[]>([]);
+  const [talks, setTalks] = useState<ManagedTalk[]>([]);
+  const [awards, setAwards] = useState<ManagedAward[]>([]);
+  const [media, setMedia] = useState<ManagedMedia[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await api.get("/api/content/site");
+      const baseContent = response.ok ? (await response.json()).content || {} : getFallbackSiteContent();
+      hydrateFromContent(baseContent);
+    } catch (loadError) {
+      console.error("Failed to load research hub content:", loadError);
+      hydrateFromContent(getFallbackSiteContent());
+      setError("Loaded fallback content because the live research hub data could not be reached.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const hydrateFromContent = (content: ResearchHubSiteContent) => {
+    setSiteContent(content);
+    setOverview(normalizeOverview(content));
+    const nextProjects = normalizeProjects(content);
+    const nextPublications = normalizePublications(content);
+    const nextGrants = normalizeGrants(content);
+    const nextTalks = normalizeTalks(content);
+    const nextAwards = normalizeAwards(content);
+    const nextMedia = normalizeMedia(content);
+    setProjects(nextProjects);
+    setPublications(nextPublications);
+    setGrants(nextGrants);
+    setTalks(nextTalks);
+    setAwards(nextAwards);
+    setMedia(nextMedia);
+    setSelectedId((current) => current || nextProjects[0]?.id || "");
+  };
+
+  const sectionItems = useMemo(() => {
+    switch (activeSection) {
+      case "projects":
+        return projects;
+      case "publications":
+        return publications;
+      case "grants":
+        return grants;
+      case "talks":
+        return talks;
+      case "awards":
+        return awards;
+      case "media":
+        return media;
+      default:
+        return [];
+    }
+  }, [activeSection, awards, grants, media, projects, publications, talks]);
+
+  const currentItems = useMemo(() => {
+    return sectionItems.filter((item) =>
+      [item.title, "description" in item ? item.description : "", "summary" in item ? item.summary : "", "category" in item ? item.category : ""]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(searchQuery.toLowerCase())),
+    );
+  }, [searchQuery, sectionItems]);
+
+  const selectedItem = useMemo(() => currentItems.find((item) => item.id === selectedId) || currentItems[0] || null, [currentItems, selectedId]);
+
+  useEffect(() => {
+    if (activeSection !== "overview" && currentItems.length > 0 && !currentItems.some((item) => item.id === selectedId)) {
+      setSelectedId(currentItems[0].id);
+    }
+  }, [activeSection, currentItems, selectedId]);
+
+  const setItemsForSection = (section: SectionId, items: ManagedItem[]) => {
+    if (section === "projects") setProjects(items as ManagedProject[]);
+    if (section === "publications") setPublications(items as ManagedPublication[]);
+    if (section === "grants") setGrants(items as ManagedGrant[]);
+    if (section === "talks") setTalks(items as ManagedTalk[]);
+    if (section === "awards") setAwards(items as ManagedAward[]);
+    if (section === "media") setMedia(items as ManagedMedia[]);
+  };
+
+  const updateSelectedItem = (patch: Record<string, any>) => {
+    if (activeSection === "overview" || !selectedItem) return;
+    const updated = sectionItems.map((item) => (item.id === selectedItem.id ? { ...item, ...patch } : item));
+    setItemsForSection(activeSection, updated);
+  };
+
+  const addItem = () => {
+    setSuccess("");
+    if (activeSection === "overview") return;
+
+    const defaults: Record<SectionId, ManagedItem | null> = {
+      overview: null,
+      projects: {
+        id: nextId("project"),
+        title: "New project",
+        summary: "",
+        category: "Research",
+        status: "Active",
+        funding: "",
+        image: "",
+        link: "",
+        details: [],
+        team: [],
+        startDate: "",
+        endDate: "",
+        budget: "",
+        publications: "",
+        citations: "",
+        collaborators: "",
+        methodology: "",
+        impact: "",
+        location: "",
+        displayOrder: projects.length,
+        published: true,
+      },
+      publications: {
+        id: nextId("publication"),
+        title: "New publication",
+        authors: "",
+        journal: "",
+        year: "",
+        status: "published",
+        type: "",
+        summary: "",
+        abstract: "",
+        doi: "",
+        fileUrl: "",
+        keywords: [],
+        displayOrder: publications.length,
+        published: true,
+      },
+      grants: {
+        id: nextId("grant"),
+        title: "New grant",
+        fundingAgency: "",
+        amount: "",
+        duration: "",
+        status: "active",
+        description: "",
+        investigators: [],
+        startDate: "",
+        endDate: "",
+        url: "",
+        displayOrder: grants.length,
+        published: true,
+      },
+      talks: {
+        id: nextId("talk"),
+        title: "New talk",
+        type: "conference",
+        institution: "",
+        location: "",
+        date: "",
+        description: "",
+        url: "",
+        displayOrder: talks.length,
+        published: true,
+      },
+      awards: {
+        id: nextId("award"),
+        title: "New award",
+        organization: "",
+        date: "",
+        description: "",
+        url: "",
+        category: "",
+        displayOrder: awards.length,
+        published: true,
+      },
+      media: {
+        id: nextId("media"),
+        title: "New media item",
+        type: "Video",
+        source: "",
+        date: "",
+        description: "",
+        url: "",
+        displayOrder: media.length,
+        published: true,
+      },
+    };
+
+    const newItem = defaults[activeSection];
+    if (!newItem) return;
+    const next = [...sectionItems, newItem].sort((a, b) => a.displayOrder - b.displayOrder);
+    setItemsForSection(activeSection, next);
+    setSelectedId(newItem.id);
+  };
+
+  const duplicateItem = () => {
+    if (activeSection === "overview" || !selectedItem) return;
+    const clone = { ...selectedItem, id: nextId(activeSection.slice(0, -1)), title: `${selectedItem.title} Copy`, displayOrder: sectionItems.length };
+    const next = [...sectionItems, clone];
+    setItemsForSection(activeSection, next);
+    setSelectedId(clone.id);
+  };
+
+  const deleteItem = () => {
+    if (activeSection === "overview" || !selectedItem) return;
+    const next = sectionItems.filter((item) => item.id !== selectedItem.id).map((item, index) => ({ ...item, displayOrder: index }));
+    setItemsForSection(activeSection, next);
+    setSelectedId(next[0]?.id || "");
+  };
+
+  const moveItem = (direction: -1 | 1) => {
+    if (activeSection === "overview" || !selectedItem) return;
+    const index = sectionItems.findIndex((item) => item.id === selectedItem.id);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= sectionItems.length) return;
+    const reordered = [...sectionItems];
+    [reordered[index], reordered[nextIndex]] = [reordered[nextIndex], reordered[index]];
+    setItemsForSection(activeSection, reordered.map((item, order) => ({ ...item, displayOrder: order })));
+  };
+
+  const saveAll = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+      const payload = {
+        ...siteContent,
+        researchHub: serializeOverview(overview),
+        researchProjects: projects.map((item) => ({
+          ...item,
+          summary: item.summary,
+          details: item.details.filter(Boolean),
+          team: item.team.filter((member) => member.name || member.role || member.affiliation),
+          publications: item.publications ? Number(item.publications) || item.publications : undefined,
+          citations: item.citations ? Number(item.citations) || item.citations : undefined,
+          collaborators: item.collaborators ? Number(item.collaborators) || item.collaborators : undefined,
+        })),
+        publications: publications.map((item) => ({
+          ...item,
+          authors: item.authors,
+          keywords: item.keywords.filter(Boolean),
+        })),
+        grants: grants.map((item) => ({ ...item, investigators: item.investigators.filter(Boolean) })),
+        conferences: talks.filter((item) => item.type === "conference").map(({ type, ...item }) => item),
+        invitedTalks: talks.filter((item) => item.type === "invited").map(({ type, ...item }) => item),
+        awards,
+        media: media.map((item) => ({
+          ...item,
+          kind: item.type,
+          href: item.url,
+        })),
+      };
+      const response = await api.put("/api/content/site", payload);
+      if (!response.ok) throw new Error("The server rejected the content update.");
+      setSiteContent(payload);
+      setSuccess("Research hub content saved successfully.");
+    } catch (saveError) {
+      console.error("Failed to save research hub content:", saveError);
+      setError("Could not save research hub changes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="w-8 h-8 animate-spin text-slate-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-6 bg-white border-slate-200">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Research Hub Control Center</h1>
+            <p className="text-sm text-slate-600 mt-2">
+              Edit the live public page content, control section visibility, and manage display order without touching code.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" onClick={loadContent}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reload
+            </Button>
+            <Button onClick={saveAll} disabled={saving}>
+              <Save className="w-4 h-4 mr-2" />
+              {saving ? "Saving..." : "Save Research Hub"}
+            </Button>
+          </div>
+        </div>
+        {error ? <p className="text-sm text-red-600 mt-4">{error}</p> : null}
+        {success ? <p className="text-sm text-green-600 mt-4">{success}</p> : null}
+      </Card>
+
+      <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <Card className="p-4">
+          <div className="space-y-2">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              const active = activeSection === section.id;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full rounded-xl border px-4 py-3 text-left transition ${active ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-5 h-5" />
+                    <div>
+                      <div className="font-semibold">{section.label}</div>
+                      <div className={`text-xs ${active ? "text-slate-200" : "text-slate-500"}`}>{section.description}</div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+
+        {activeSection === "overview" ? (
+          <OverviewEditor overview={overview} onChange={setOverview} />
+        ) : (
+          <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <Card className="p-4">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search this section..." />
+                <Button size="sm" onClick={addItem}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+              <div className="space-y-3 max-h-[72vh] overflow-auto pr-1">
+                {currentItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setSelectedId(item.id)}
+                    className={`w-full rounded-xl border p-4 text-left transition ${selectedItem?.id === item.id ? "border-blue-400 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold text-slate-900 line-clamp-2">{item.title}</div>
+                        <div className="text-xs text-slate-500 mt-1">Order {item.displayOrder + 1}</div>
+                      </div>
+                      <span className={`text-[11px] rounded-full px-2 py-1 ${item.published ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"}`}>
+                        {item.published ? "Live" : "Hidden"}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              {selectedItem ? (
+                <div className="space-y-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-xl font-semibold text-slate-900">{selectedItem.title || "Untitled item"}</h2>
+                      <p className="text-sm text-slate-500 mt-1">Edit the fields below to control how this item appears on the public research hub.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" onClick={() => moveItem(-1)}>
+                        <ArrowUp className="w-4 h-4 mr-2" />
+                        Up
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => moveItem(1)}>
+                        <ArrowDown className="w-4 h-4 mr-2" />
+                        Down
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={duplicateItem}>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Duplicate
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-red-600" onClick={deleteItem}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <LabeledField label="Title">
+                      <Input value={selectedItem.title} onChange={(event) => updateSelectedItem({ title: event.target.value })} />
+                    </LabeledField>
+                    <LabeledField label="Published">
+                      <label className="flex items-center gap-3 h-10 rounded-md border border-slate-200 px-3 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={selectedItem.published}
+                          onChange={(event) => updateSelectedItem({ published: event.target.checked })}
+                        />
+                        Show this item on the public page
+                      </label>
+                    </LabeledField>
+                  </div>
+
+                  <SectionFields item={selectedItem} section={activeSection} onPatch={updateSelectedItem} />
+                </div>
+              ) : (
+                <div className="py-20 text-center text-slate-500">Select or create an item to start editing.</div>
+              )}
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OverviewEditor({
+  overview,
+  onChange,
+}: {
+  overview: ResearchHubOverview;
+  onChange: (next: ResearchHubOverview) => void;
+}) {
+  const update = (patch: Partial<ResearchHubOverview>) => onChange({ ...overview, ...patch });
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Hero Content</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <LabeledField label="Hero title">
+            <Input value={overview.heroTitle} onChange={(event) => update({ heroTitle: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Acronym line">
+            <Input value={overview.heroAcronym} onChange={(event) => update({ heroAcronym: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Hero subtitle" className="mt-4">
+          <Textarea value={overview.heroSubtitle} onChange={(event) => update({ heroSubtitle: event.target.value })} rows={3} />
+        </LabeledField>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Mission</h2>
+        <LabeledField label="Mission title">
+          <Input value={overview.missionTitle} onChange={(event) => update({ missionTitle: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Mission paragraphs" className="mt-4">
+          <Textarea
+            rows={6}
+            value={joinLines(overview.missionParagraphs)}
+            onChange={(event) => update({ missionParagraphs: parseLines(event.target.value) })}
+          />
+        </LabeledField>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Impact Cards</h2>
+        <p className="text-sm text-slate-500 mb-4">One card per line using `label | value | description | icon | color`.</p>
+        <Textarea
+          rows={6}
+          value={overview.impactStats.map((item) => [item.label, item.value, item.description || "", item.icon || "", item.color || ""].join(" | ")).join("\n")}
+          onChange={(event) =>
+            update({
+              impactStats: parseLines(event.target.value).map((line) => {
+                const [label = "", value = "", description = "", icon = "", color = ""] = line.split("|").map((part) => part.trim());
+                return { label, value, description, icon, color };
+              }),
+            })
+          }
+        />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Focus Areas</h2>
+        <p className="text-sm text-slate-500 mb-4">One focus area per line using `title | description | icon | color`.</p>
+        <Textarea
+          rows={8}
+          value={overview.focusAreas.map((item) => [item.title, item.description, item.icon || "", item.color || ""].join(" | ")).join("\n")}
+          onChange={(event) =>
+            update({
+              focusAreas: parseLines(event.target.value).map((line) => {
+                const [title = "", description = "", icon = "", color = ""] = line.split("|").map((part) => part.trim());
+                return { title, description, icon, color };
+              }),
+            })
+          }
+        />
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-slate-900 mb-4">Highlight Stats</h2>
+        <p className="text-sm text-slate-500 mb-4">One stat per line using `label | value`.</p>
+        <Textarea
+          rows={5}
+          value={overview.highlightStats.map((item) => [item.label, item.value].join(" | ")).join("\n")}
+          onChange={(event) =>
+            update({
+              highlightStats: parseLines(event.target.value).map((line) => {
+                const [label = "", value = ""] = line.split("|").map((part) => part.trim());
+                return { label, value };
+              }),
+            })
+          }
+        />
+      </Card>
+    </div>
+  );
+}
+
+function SectionFields({
+  section,
+  item,
+  onPatch,
+}: {
+  section: SectionId;
+  item: ManagedItem;
+  onPatch: (patch: Record<string, any>) => void;
+}) {
+  if (section === "projects") {
+    const project = item as ManagedProject;
+    return (
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-3 gap-4">
+          <LabeledField label="Category">
+            <Input value={project.category} onChange={(event) => onPatch({ category: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Status">
+            <Input value={project.status} onChange={(event) => onPatch({ status: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Funding">
+            <Input value={project.funding} onChange={(event) => onPatch({ funding: event.target.value })} />
+          </LabeledField>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <LabeledField label="Image URL">
+            <Input value={project.image} onChange={(event) => onPatch({ image: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="External link">
+            <Input value={project.link} onChange={(event) => onPatch({ link: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Summary">
+          <Textarea rows={4} value={project.summary} onChange={(event) => onPatch({ summary: event.target.value })} />
+        </LabeledField>
+        <div className="grid md:grid-cols-2 gap-4">
+          <LabeledField label="Start date">
+            <Input value={project.startDate} onChange={(event) => onPatch({ startDate: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="End date">
+            <Input value={project.endDate} onChange={(event) => onPatch({ endDate: event.target.value })} />
+          </LabeledField>
+        </div>
+        <div className="grid md:grid-cols-4 gap-4">
+          <LabeledField label="Budget">
+            <Input value={project.budget} onChange={(event) => onPatch({ budget: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Publications">
+            <Input value={project.publications} onChange={(event) => onPatch({ publications: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Citations">
+            <Input value={project.citations} onChange={(event) => onPatch({ citations: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Collaborators">
+            <Input value={project.collaborators} onChange={(event) => onPatch({ collaborators: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Methodology">
+          <Textarea rows={3} value={project.methodology} onChange={(event) => onPatch({ methodology: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Impact">
+          <Textarea rows={3} value={project.impact} onChange={(event) => onPatch({ impact: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Location">
+          <Input value={project.location} onChange={(event) => onPatch({ location: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Detail bullets">
+          <Textarea rows={5} value={joinLines(project.details)} onChange={(event) => onPatch({ details: parseLines(event.target.value) })} />
+        </LabeledField>
+        <LabeledField label="Team members">
+          <Textarea rows={6} value={joinTeam(project.team)} onChange={(event) => onPatch({ team: parseTeam(event.target.value) })} />
+        </LabeledField>
+      </div>
+    );
+  }
+
+  if (section === "publications") {
+    const publication = item as ManagedPublication;
+    return (
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-4 gap-4">
+          <LabeledField label="Authors">
+            <Input value={publication.authors} onChange={(event) => onPatch({ authors: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Journal">
+            <Input value={publication.journal} onChange={(event) => onPatch({ journal: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Year">
+            <Input value={publication.year} onChange={(event) => onPatch({ year: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Status">
+            <Input value={publication.status} onChange={(event) => onPatch({ status: event.target.value })} />
+          </LabeledField>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          <LabeledField label="Type">
+            <Input value={publication.type} onChange={(event) => onPatch({ type: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="DOI or link">
+            <Input value={publication.doi} onChange={(event) => onPatch({ doi: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="File URL">
+            <Input value={publication.fileUrl} onChange={(event) => onPatch({ fileUrl: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Summary">
+          <Textarea rows={3} value={publication.summary} onChange={(event) => onPatch({ summary: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Abstract">
+          <Textarea rows={4} value={publication.abstract} onChange={(event) => onPatch({ abstract: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Keywords">
+          <Textarea rows={4} value={joinLines(publication.keywords)} onChange={(event) => onPatch({ keywords: parseLines(event.target.value) })} />
+        </LabeledField>
+      </div>
+    );
+  }
+
+  if (section === "grants") {
+    const grant = item as ManagedGrant;
+    return (
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-4 gap-4">
+          <LabeledField label="Funding agency">
+            <Input value={grant.fundingAgency} onChange={(event) => onPatch({ fundingAgency: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Amount">
+            <Input value={grant.amount} onChange={(event) => onPatch({ amount: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Duration">
+            <Input value={grant.duration} onChange={(event) => onPatch({ duration: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Status">
+            <Input value={grant.status} onChange={(event) => onPatch({ status: event.target.value })} />
+          </LabeledField>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          <LabeledField label="Start date">
+            <Input value={grant.startDate} onChange={(event) => onPatch({ startDate: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="End date">
+            <Input value={grant.endDate} onChange={(event) => onPatch({ endDate: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Reference link">
+            <Input value={grant.url} onChange={(event) => onPatch({ url: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Description">
+          <Textarea rows={4} value={grant.description} onChange={(event) => onPatch({ description: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Investigators">
+          <Textarea rows={4} value={joinLines(grant.investigators)} onChange={(event) => onPatch({ investigators: parseLines(event.target.value) })} />
+        </LabeledField>
+      </div>
+    );
+  }
+
+  if (section === "talks") {
+    const talk = item as ManagedTalk;
+    return (
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-4 gap-4">
+          <LabeledField label="Type">
+            <Input value={talk.type} onChange={(event) => onPatch({ type: event.target.value === "invited" ? "invited" : "conference" })} />
+          </LabeledField>
+          <LabeledField label="Institution">
+            <Input value={talk.institution} onChange={(event) => onPatch({ institution: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Location">
+            <Input value={talk.location} onChange={(event) => onPatch({ location: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Date">
+            <Input value={talk.date} onChange={(event) => onPatch({ date: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Description">
+          <Textarea rows={4} value={talk.description} onChange={(event) => onPatch({ description: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Reference link">
+          <Input value={talk.url} onChange={(event) => onPatch({ url: event.target.value })} />
+        </LabeledField>
+      </div>
+    );
+  }
+
+  if (section === "awards") {
+    const award = item as ManagedAward;
+    return (
+      <div className="space-y-4">
+        <div className="grid md:grid-cols-4 gap-4">
+          <LabeledField label="Organization">
+            <Input value={award.organization} onChange={(event) => onPatch({ organization: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Date or year">
+            <Input value={award.date} onChange={(event) => onPatch({ date: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Category">
+            <Input value={award.category} onChange={(event) => onPatch({ category: event.target.value })} />
+          </LabeledField>
+          <LabeledField label="Reference link">
+            <Input value={award.url} onChange={(event) => onPatch({ url: event.target.value })} />
+          </LabeledField>
+        </div>
+        <LabeledField label="Description">
+          <Textarea rows={4} value={award.description} onChange={(event) => onPatch({ description: event.target.value })} />
+        </LabeledField>
+      </div>
+    );
+  }
+
+  const media = item as ManagedMedia;
+  return (
+    <div className="space-y-4">
+      <div className="grid md:grid-cols-4 gap-4">
+        <LabeledField label="Type">
+          <Input value={media.type} onChange={(event) => onPatch({ type: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Source">
+          <Input value={media.source} onChange={(event) => onPatch({ source: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Date">
+          <Input value={media.date} onChange={(event) => onPatch({ date: event.target.value })} />
+        </LabeledField>
+        <LabeledField label="Media link">
+          <Input value={media.url} onChange={(event) => onPatch({ url: event.target.value })} />
+        </LabeledField>
+      </div>
+      <LabeledField label="Description">
+        <Textarea rows={4} value={media.description} onChange={(event) => onPatch({ description: event.target.value })} />
+      </LabeledField>
+    </div>
+  );
+}
+
+function LabeledField({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="block text-sm font-medium text-slate-700 mb-2">{label}</label>
+      {children}
+    </div>
+  );
+}
