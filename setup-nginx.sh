@@ -12,14 +12,16 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
+DOMAIN_NAME="${DOMAIN_NAME:-localhost}"
 NGINX_CONF_SOURCE="/home/codecrafter/Documents/combined/nginx.conf"
 NGINX_CONF_DEST="/etc/nginx/sites-available/combined"
 NGINX_CONF_ENABLED="/etc/nginx/sites-enabled/combined"
 CERTBOT_DIR="/var/www/certbot"
+USE_SSL="${USE_SSL:-false}"
 
 echo -e "${GREEN}=== Nginx Setup for Single-Domain Integration ===${NC}"
 echo "Domain: $DOMAIN_NAME"
+echo "SSL: $USE_SSL"
 echo ""
 
 # Check if running as root
@@ -48,7 +50,12 @@ fi
 
 # Copy and customize nginx configuration
 echo -e "${YELLOW}Installing nginx configuration...${NC}"
-sed "s/your-domain.com/$DOMAIN_NAME/g" "$NGINX_CONF_SOURCE" > "$NGINX_CONF_DEST"
+if [ "$USE_SSL" = "true" ]; then
+    sed "s/your-domain.com/$DOMAIN_NAME/g" "$NGINX_CONF_SOURCE" > "$NGINX_CONF_DEST"
+else
+    # For local development, use localhost without SSL
+    sed "s/your-domain.com/$DOMAIN_NAME/g" "$NGINX_CONF_SOURCE" > "$NGINX_CONF_DEST"
+fi
 
 # Create symbolic link to enable site
 echo -e "${YELLOW}Enabling site...${NC}"
@@ -74,12 +81,13 @@ fi
 echo -e "${YELLOW}Restarting nginx...${NC}"
 systemctl restart nginx
 
-# Ask about SSL certificate
-echo ""
-echo -e "${GREEN}=== SSL Certificate Setup ===${NC}"
-read -p "Do you want to set up SSL with Let's Encrypt? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+# Ask about SSL certificate (skip for localhost)
+if [ "$USE_SSL" = "true" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
+    echo ""
+    echo -e "${GREEN}=== SSL Certificate Setup ===${NC}"
+    read -p "Do you want to set up SSL with Let's Encrypt? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
     # Install certbot if not present
     if ! command -v certbot &> /dev/null; then
         echo -e "${YELLOW}Installing certbot...${NC}"
@@ -94,21 +102,33 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "sudo certbot --nginx -d $DOMAIN_NAME -d www.$DOMAIN_NAME"
     }
     
-    # Setup auto-renewal
-    echo -e "${YELLOW}Setting up SSL auto-renewal...${NC}"
-    (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet && systemctl reload nginx") | crontab -
+        # Setup auto-renewal
+        echo -e "${YELLOW}Setting up SSL auto-renewal...${NC}"
+        (crontab -l 2>/dev/null; echo "0 3 * * * certbot renew --quiet && systemctl reload nginx") | crontab -
+    fi
+elif [ "$DOMAIN_NAME" = "localhost" ]; then
+    echo -e "${YELLOW}Skipping SSL setup for localhost (local development)${NC}"
 fi
 
 echo ""
 echo -e "${GREEN}=== Setup Complete ===${NC}"
 echo "Nginx is now configured for domain: $DOMAIN_NAME"
 echo ""
-echo "Service endpoints:"
-echo "  - Main website: https://$DOMAIN_NAME"
-echo "  - Admin panel: https://$DOMAIN_NAME/admin"
-echo "  - Scholar Forge: https://$DOMAIN_NAME/scholars"
-echo "  - Admin API: https://$DOMAIN_NAME/api/"
-echo "  - Scholars API: https://$DOMAIN_NAME/scholars-api/"
+if [ "$USE_SSL" = "true" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
+    echo "Service endpoints:"
+    echo "  - Main website: https://$DOMAIN_NAME"
+    echo "  - Admin panel: https://$DOMAIN_NAME/admin"
+    echo "  - Scholar Forge: https://$DOMAIN_NAME/scholars"
+    echo "  - Admin API: https://$DOMAIN_NAME/api/"
+    echo "  - Scholars API: https://$DOMAIN_NAME/scholars-api/"
+else
+    echo "Service endpoints (HTTP):"
+    echo "  - Main website: http://$DOMAIN_NAME"
+    echo "  - Admin panel: http://$DOMAIN_NAME/admin"
+    echo "  - Scholar Forge: http://$DOMAIN_NAME/scholars"
+    echo "  - Admin API: http://$DOMAIN_NAME/api/"
+    echo "  - Scholars API: http://$DOMAIN_NAME/scholars-api/"
+fi
 echo ""
 echo "Configuration file: $NGINX_CONF_DEST"
 echo "Logs: /var/log/nginx/combined-*.log"

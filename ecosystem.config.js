@@ -73,10 +73,9 @@ module.exports = {
     },
     {
       name: 'website-backend',
-      script: 'gunicorn',
-      args: `--workers ${resources.pythonWorkers} --bind 0.0.0.0:8000 backend.server:app`,
-      cwd: '/home/codecrafter/Documents/combined/website',
-      interpreter: 'python3',
+      script: 'python3',
+      args: 'server.py',
+      cwd: '/home/codecrafter/Documents/combined/website/backend',
       instances: 1,
       exec_mode: 'fork',
       env: { PYTHONUNBUFFERED: '1' },
