@@ -114,14 +114,20 @@ See [docs/deployment/DEBIAN-INSTALL.md](docs/deployment/DEBIAN-INSTALL.md) for d
 
 **Minimum Requirements:**
 - **RAM**: 1GB (2GB recommended, 4GB optimal)
-- **CPU**: 2 cores (4 cores recommended)
+- **CPU**: 1 core (2 cores recommended, 4 cores optimal)
 - **Storage**: 20GB SSD (50GB recommended)
 - **OS**: Ubuntu 20.04+, Debian 11+, CentOS 8+, Arch Linux
 
-**⚠️ Low Memory Warning:**
+**⚠️ Low Resource Warnings:**
 - **1GB RAM**: Supported with performance limitations and warning
-- **2GB+ RAM**: Recommended for optimal performance
-- **4GB+ RAM**: Optimal for production use
+- **1 CPU Core**: Supported with performance limitations and warning
+- **2GB+ RAM + 2+ Cores**: Recommended for optimal performance
+- **4GB+ RAM + 4+ Cores**: Optimal for production use
+
+**🔧 Performance Optimization:**
+- Single-core systems use fork mode instead of cluster mode
+- Low memory systems have reduced instance counts and memory limits
+- Automatic configuration based on available resources
 
 **Supported Operating Systems:**
 - Ubuntu 20.04 LTS, 22.04 LTS, 24.04 LTS

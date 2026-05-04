@@ -96,8 +96,16 @@ check_requirements() {
 
     # Check CPU cores
     CORES=$(nproc)
-    if [[ $CORES -lt 2 ]]; then
-        error "Minimum 2 CPU cores required. Found: $CORES"
+    if [[ $CORES -lt 1 ]]; then
+        error "Minimum 1 CPU core required. Found: $CORES"
+    elif [[ $CORES -lt 2 ]]; then
+        warn "Single-core CPU detected: $CORES core. Performance may be limited."
+        warn "For optimal performance, 2+ CPU cores are recommended."
+        read -p "Continue with $CORES CPU core? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            error "Installation cancelled by user"
+        fi
     fi
 
     # Check disk space

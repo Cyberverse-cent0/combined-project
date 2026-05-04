@@ -82,8 +82,16 @@ check_requirements() {
 
     # Check CPU cores
     CORES=$(nproc)
-    if [[ $CORES -lt 2 ]]; then
-        error "Minimum 2 CPU cores required. Found: $CORES"
+    if [[ $CORES -lt 1 ]]; then
+        error "Minimum 1 CPU core required. Found: $CORES"
+    elif [[ $CORES -lt 2 ]]; then
+        warn "Single-core CPU detected: $CORES core. Performance may be limited."
+        warn "For optimal performance, 2+ CPU cores are recommended."
+        read -p "Continue with $CORES CPU core? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            error "Installation cancelled by user"
+        fi
     fi
 
     log "System requirements met: ${RAM}GB RAM, $CORES cores"
@@ -251,21 +259,23 @@ configure_nginx() {
 create_pm2_config() {
     log "Creating PM2 configuration..."
 
-    # Determine instance count based on available RAM
-    if [[ $RAM -lt 2 ]]; then
+    # Determine instance count and execution mode based on available resources
+    if [[ $RAM -lt 2 ]] || [[ $CORES -lt 2 ]]; then
         FRONTEND_INSTANCES=1
-        FRONTEND_MEMORY="512M"
-        BACKEND_MEMORY="256M"
-        SCHOLAR_MEMORY="256M"
-        API_MEMORY="256M"
-        log "Optimizing for low memory system (1GB RAM)"
+        FRONTEND_MEMORY="256M"
+        BACKEND_MEMORY="128M"
+        SCHOLAR_MEMORY="128M"
+        API_MEMORY="128M"
+        EXEC_MODE="fork"
+        log "Optimizing for low-resource system (${RAM}GB RAM, ${CORES} cores)"
     else
         FRONTEND_INSTANCES=2
         FRONTEND_MEMORY="1G"
         BACKEND_MEMORY="512M"
         SCHOLAR_MEMORY="512M"
         API_MEMORY="512M"
-        log "Using standard configuration (2GB+ RAM)"
+        EXEC_MODE="cluster"
+        log "Using standard configuration (2GB+ RAM, 2+ cores)"
     fi
 
     cat > $INSTALL_DIR/ecosystem.config.js << EOF
@@ -277,7 +287,7 @@ module.exports = {
       args: 'start',
       cwd: '$INSTALL_DIR/website',
       instances: $FRONTEND_INSTANCES,
-      exec_mode: 'cluster',
+      exec_mode: '$EXEC_MODE',
       env: { NODE_ENV: 'production', PORT: 3000 },
       error_file: '/var/log/$PROJECT_NAME/website-frontend-error.log',
       out_file: '/var/log/$PROJECT_NAME/website-frontend-out.log',
