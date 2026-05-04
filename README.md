@@ -1,14 +1,13 @@
-# Combined Project
+# Dr. Stephen Asatsa Website
 
-A full-stack web application combining a Next.js website, Scholar Forge application, and Go microservices for high-performance computing operations.
+A professional website built with Next.js, featuring a modern admin panel and high-performance Go microservices.
 
 ## 🏗️ Project Structure
 
 ```
 combined-project/
 ├── apps/                    # Application code
-│   ├── website/             # Next.js main website + Python backend
-│   └── scholars-forge/     # Scholar Forge academic platform
+│   └── website/             # Next.js main website + Python backend
 ├── deployment/              # Deployment automation
 │   ├── scripts/            # All deployment scripts
 │   ├── configs/            # PM2, nginx, docker configs
@@ -28,9 +27,7 @@ combined-project/
 ## 🚀 Architecture
 
 - **Website Frontend**: Next.js (React) - Main website with admin panel
-- **Scholar Forge Frontend**: React/Vite - Academic collaboration platform
 - **Website Backend**: Python/Flask - Admin API and content management
-- **Scholars API**: Node.js - Scholar Forge backend API
 - **Go Microservices**: High-performance services for CPU-intensive operations
   - Password Service (Port 9001) - PBKDF2 password hashing
   - Telemetry Service (Port 9002) - Monitoring and metrics
@@ -51,16 +48,6 @@ combined-project/
 - **Docker** 20.10+
 - **Docker Compose** 2.0+
 
-## 🌐 Domain Configuration
-
-Before deploying, configure your domain name. See [docs/DOMAIN-CONFIGURATION.md](./docs/DOMAIN-CONFIGURATION.md) for detailed instructions.
-
-All deployment scripts accept the `DOMAIN_NAME` parameter:
-
-```bash
-DOMAIN_NAME=your-domain.com ./deployment/scripts/deploy-docker.sh
-```
-
 ## ⚡ Quick Start
 
 ### Deployment Options
@@ -68,7 +55,7 @@ DOMAIN_NAME=your-domain.com ./deployment/scripts/deploy-docker.sh
 The project includes multiple deployment scripts that automatically detect your environment:
 
 - **deploy-codespace.sh** - For GitHub Codespaces and containers (no systemd)
-- **deploy-both-projects.sh** - Auto-detects systemd, falls back to PM2 if unavailable
+- **deploy-website.sh** - Auto-detects systemd, falls back to PM2 if unavailable
 - **deploy-docker.sh** - Docker-based deployment with systemd detection
 - **deploy-systemd-bare-metal.sh** - Bare metal with systemd (requires systemd)
 - **start-pm2.sh** - Direct PM2 startup (manual dependency installation)
@@ -82,9 +69,8 @@ cd combined-project
 ```
 
 This script automatically:
-- Installs PM2 and pnpm
+- Installs PM2
 - Installs all dependencies
-- Builds Scholar Forge
 - Optionally builds Go services
 - Starts all services with PM2
 
@@ -93,7 +79,7 @@ This script automatically:
 ```bash
 git clone https://github.com/Cyberverse-cent0/combined-project.git
 cd combined-project
-./deployment/scripts/deploy-both-projects.sh
+./deployment/scripts/deploy-website.sh
 ```
 
 This script automatically:

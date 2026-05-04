@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Automated Deployment Script for Both Projects
-# Website (Next.js + Python) and Scholars Forge (Node.js + React)
+# Automated Deployment Script for Website
+# Website (Next.js + Python) deployment only
 # Supports Debian/Ubuntu, Arch Linux, and Fedora
 
 set -e
 
-# Source OS detection library
+# Source project root detection
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$SCRIPT_DIR/../../docs/setup/scripts/utilities/os-detect.sh" ]; then
-    source "$SCRIPT_DIR/../../docs/setup/scripts/utilities/os-detect.sh"
+source "$SCRIPT_DIR/utils/project-root.sh"
+
+# Source OS detection library
+if [ -f "$PROJECT_ROOT/docs/setup/scripts/utilities/os-detect.sh" ]; then
+    source "$PROJECT_ROOT/docs/setup/scripts/utilities/os-detect.sh"
 else
     echo "Error: os-detect.sh not found in expected locations"
     exit 1
@@ -30,17 +33,10 @@ has_systemd() {
 }
 
 # Configuration
-DOMAIN_NAME="${DOMAIN_NAME:-your-domain.com}"
-SCHOLARS_PATH="${SCHOLARS_PATH:-/scholars}"
-PROJECTS_DIR="$HOME/projects"
-WEBSITE_DIR="$PROJECTS_DIR/apps/website"
-SCHOLARS_DIR="$PROJECTS_DIR/apps/scholars-forge"
-WEBSITE_REPO="https://github.com/kibirastephengichigi-bit/website.git"
-SCHOLARS_REPO="https://github.com/Cyberverse-cent0/combined-project.git"
+WEBSITE_DIR="$PROJECT_ROOT/apps/website"
 DB_USER="codecrafter"
 DB_PASSWORD="${DB_PASSWORD:-change_this_secure_password}"
 DB_NAME_WEBSITE="stephenasatsa"
-DB_NAME_SCHOLARS="scholarforge"
 
 # Auto-detect deployment mode based on systemd availability
 if [ -z "$DEPLOYMENT_MODE" ]; then
