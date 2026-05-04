@@ -82,8 +82,16 @@ check_requirements() {
 
     # Check RAM
     RAM=$(free -m | awk 'NR==2{printf "%.0f", $2/1024}')
-    if [[ $RAM -lt 2 ]]; then
-        error "Minimum 2GB RAM required. Found: ${RAM}GB"
+    if [[ $RAM -lt 1 ]]; then
+        error "Minimum 1GB RAM required. Found: ${RAM}GB"
+    elif [[ $RAM -lt 2 ]]; then
+        warn "Low memory detected: ${RAM}GB RAM. Performance may be limited."
+        warn "For optimal performance, 2GB+ RAM is recommended."
+        read -p "Continue with ${RAM}GB RAM? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            error "Installation cancelled by user"
+        fi
     fi
 
     # Check CPU cores

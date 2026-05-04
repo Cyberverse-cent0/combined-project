@@ -68,8 +68,16 @@ check_requirements() {
 
     # Check RAM
     RAM=$(free -m | awk 'NR==2{printf "%.0f", $2/1024}')
-    if [[ $RAM -lt 2 ]]; then
-        error "Minimum 2GB RAM required. Found: ${RAM}GB"
+    if [[ $RAM -lt 1 ]]; then
+        error "Minimum 1GB RAM required. Found: ${RAM}GB"
+    elif [[ $RAM -lt 2 ]]; then
+        warn "Low memory detected: ${RAM}GB RAM. Performance may be limited."
+        warn "For optimal performance, 2GB+ RAM is recommended."
+        read -p "Continue with ${RAM}GB RAM? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            error "Installation cancelled by user"
+        fi
     fi
 
     # Check CPU cores
@@ -243,6 +251,23 @@ configure_nginx() {
 create_pm2_config() {
     log "Creating PM2 configuration..."
 
+    # Determine instance count based on available RAM
+    if [[ $RAM -lt 2 ]]; then
+        FRONTEND_INSTANCES=1
+        FRONTEND_MEMORY="512M"
+        BACKEND_MEMORY="256M"
+        SCHOLAR_MEMORY="256M"
+        API_MEMORY="256M"
+        log "Optimizing for low memory system (1GB RAM)"
+    else
+        FRONTEND_INSTANCES=2
+        FRONTEND_MEMORY="1G"
+        BACKEND_MEMORY="512M"
+        SCHOLAR_MEMORY="512M"
+        API_MEMORY="512M"
+        log "Using standard configuration (2GB+ RAM)"
+    fi
+
     cat > $INSTALL_DIR/ecosystem.config.js << EOF
 module.exports = {
   apps: [
@@ -251,13 +276,13 @@ module.exports = {
       script: 'npm',
       args: 'start',
       cwd: '$INSTALL_DIR/website',
-      instances: 2,
+      instances: $FRONTEND_INSTANCES,
       exec_mode: 'cluster',
       env: { NODE_ENV: 'production', PORT: 3000 },
       error_file: '/var/log/$PROJECT_NAME/website-frontend-error.log',
       out_file: '/var/log/$PROJECT_NAME/website-frontend-out.log',
       autorestart: true,
-      max_memory_restart: '1G'
+      max_memory_restart: '$FRONTEND_MEMORY'
     },
     {
       name: 'website-backend',
@@ -270,7 +295,7 @@ module.exports = {
       error_file: '/var/log/$PROJECT_NAME/website-backend-error.log',
       out_file: '/var/log/$PROJECT_NAME/website-backend-out.log',
       autorestart: true,
-      max_memory_restart: '512M'
+      max_memory_restart: '$BACKEND_MEMORY'
     },
     {
       name: 'scholar-forge-frontend',
@@ -283,7 +308,7 @@ module.exports = {
       error_file: '/var/log/$PROJECT_NAME/scholar-forge-error.log',
       out_file: '/var/log/$PROJECT_NAME/scholar-forge-out.log',
       autorestart: true,
-      max_memory_restart: '512M'
+      max_memory_restart: '$SCHOLAR_MEMORY'
     },
     {
       name: 'scholars-api',
@@ -296,7 +321,7 @@ module.exports = {
       error_file: '/var/log/$PROJECT_NAME/scholars-api-error.log',
       out_file: '/var/log/$PROJECT_NAME/scholars-api-out.log',
       autorestart: true,
-      max_memory_restart: '512M'
+      max_memory_restart: '$API_MEMORY'
     }
   ]
 };
