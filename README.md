@@ -8,11 +8,12 @@ A professional website built with Next.js, featuring a modern admin panel and hi
 combined-project/
 ├── apps/                    # Application code
 │   └── website/             # Next.js main website + Python backend + Go microservices
-├── deployment/              # Deployment automation
-│   ├── scripts/            # All deployment scripts
-│   ├── configs/            # PM2, nginx, docker configs
-│   └── production/         # Production-ready configurations
+├── deployment/              # Legacy deployment (moved to docs/deployment)
 ├── docs/                    # Documentation
+│   ├── deployment/         # Deployment scripts and configs
+│   │   ├── deploy-debian.sh # Debian installation script
+│   │   ├── configs/         # PM2, nginx, docker configs
+│   │   └── DEBIAN-INSTALL.md # Debian installation guide
 │   ├── architecture/        # System architecture docs
 │   ├── setup/              # Setup and configuration
 │   └── api/                # API documentation
@@ -80,7 +81,7 @@ sudo ./install.sh
 ```bash
 git clone https://github.com/Cyberverse-cent0/combined-project.git
 cd combined-project
-./deployment/scripts/deploy-codespace.sh
+./docs/deployment/deploy-codespace.sh
 ```
 
 #### Option 2: Production with PM2
@@ -88,7 +89,7 @@ cd combined-project
 ```bash
 git clone https://github.com/Cyberverse-cent0/combined-project.git
 cd combined-project
-./deployment/scripts/deploy-website.sh
+./docs/deployment/deploy-website.sh
 ```
 
 #### Option 3: Docker Deployment
@@ -96,8 +97,18 @@ cd combined-project
 ```bash
 git clone https://github.com/Cyberverse-cent0/combined-project.git
 cd combined-project
-./deployment/scripts/deploy-docker.sh
+./docs/deployment/deploy-docker.sh
 ```
+
+#### Option 4: Debian Installation
+
+```bash
+git clone https://github.com/Cyberverse-cent0/combined-project.git
+cd combined-project
+sudo ./docs/deployment/deploy-debian.sh
+```
+
+See [docs/deployment/DEBIAN-INSTALL.md](docs/deployment/DEBIAN-INSTALL.md) for detailed Debian installation instructions.
 
 ### 📋 System Requirements
 
