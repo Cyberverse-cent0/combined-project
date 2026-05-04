@@ -5,8 +5,8 @@ Wants=postgresql.service
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
+User=http
+Group=http
 WorkingDirectory=/opt/stephenasatsa/apps/website/backend
 Environment=PYTHONPATH=/opt/stephenasatsa/apps/website/backend
 Environment=PATH=/opt/stephenasatsa/apps/website/backend/venv/bin

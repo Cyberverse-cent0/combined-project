@@ -5,8 +5,8 @@ Wants=stephenasatsa-backend.service
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
+User=http
+Group=http
 WorkingDirectory=/opt/stephenasatsa/apps/website
 Environment=NODE_ENV=production
 Environment=PORT=3000

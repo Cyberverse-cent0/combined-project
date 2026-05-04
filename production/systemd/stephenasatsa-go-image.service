@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-Group=www-data
+User=http
+Group=http
 WorkingDirectory=/opt/stephenasatsa/apps/website/backend/go-services
 Environment=PORT=9003
 ExecStart=/opt/stephenasatsa/apps/website/backend/go-services/image-service/image-service
