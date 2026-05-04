@@ -265,13 +265,22 @@ setup_database() {
 setup_project() {
     log "Setting up project files..."
 
-    # Create project directory
-    mkdir -p $INSTALL_DIR
-    cd $INSTALL_DIR
+    # Check if we're already in the project directory
+    if [[ -f "$(pwd)/README.md" ]] && [[ -d "$(pwd)/website" ]]; then
+        log "Already in project directory, using current location"
+        INSTALL_DIR=$(pwd)
+    else
+        # Create project directory
+        mkdir -p $INSTALL_DIR
+        cd $INSTALL_DIR
 
-    # Clone repository (update with your actual repo)
-    if [[ ! -d "$INSTALL_DIR/apps" ]]; then
-        git clone https://github.com/Cyberverse-cent0/combined-project.git .
+        # Clone repository if not already present
+        if [[ ! -d "$INSTALL_DIR/apps" ]] && [[ ! -d "$INSTALL_DIR/website" ]]; then
+            git clone https://github.com/Cyberverse-cent0/combined-project.git temp
+            mv temp/* .
+            mv temp/.* . 2>/dev/null || true
+            rmdir temp
+        fi
     fi
 
     # Set permissions
