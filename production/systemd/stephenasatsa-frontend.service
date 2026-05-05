@@ -11,7 +11,7 @@ WorkingDirectory=/opt/stephenasatsa/apps/website
 Environment=NODE_ENV=production
 Environment=PORT=3000
 EnvironmentFile=/opt/stephenasatsa/.env.production
-ExecStart=/usr/bin/npm start
+ExecStart=/usr/bin/npm run dev
 Restart=always
 RestartSec=10
 StandardOutput=append:/var/log/stephenasatsa/frontend.log

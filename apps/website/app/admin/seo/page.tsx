@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { useState, ChangeEvent } from "react";
+import { Card } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import { Badge } from "../../../components/ui/badge";
 import {
   Target,
   Globe,
@@ -31,7 +31,8 @@ import {
   Image,
   Hash,
   ShieldCheck,
-  X
+  X,
+  Plus
 } from "lucide-react";
 
 interface SEOData {
@@ -45,15 +46,12 @@ interface SEOData {
   robotsTxt: string;
   sitemapUrl: string;
   structuredData: any;
+  twitterTitle: string;
+  twitterDescription: string;
 }
 
-interface SEOToolsProps {
-  currentSEO?: SEOData;
-  onSave?: (seo: SEOData) => void;
-}
-
-export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
-  const [seoData, setSEOData] = useState<SEOData>(currentSEO || {
+function AdminSEOPage() {
+  const [seoData, setSEOData] = useState<SEOData>({
     title: '',
     description: '',
     keywords: [],
@@ -63,7 +61,9 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
     canonicalUrl: '',
     robotsTxt: '',
     sitemapUrl: '',
-    structuredData: {}
+    structuredData: {},
+    twitterTitle: '',
+    twitterDescription: ''
   });
 
   const [activeTab, setActiveTab] = useState<'basic' | 'social' | 'technical' | 'preview'>('basic');
@@ -72,20 +72,13 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
 
   const calculateSEOScore = () => {
     let score = 0;
-    
-    // Title optimization
     if (seoData.title.length >= 30 && seoData.title.length <= 60) score += 20;
     if (seoData.title.toLowerCase().includes(seoData.keywords[0]?.toLowerCase() || '')) score += 15;
-    
-    // Description optimization
     if (seoData.description.length >= 120 && seoData.description.length <= 160) score += 20;
     if (seoData.keywords.length >= 3 && seoData.keywords.length <= 10) score += 15;
-    
-    // Technical SEO
     if (seoData.ogTitle && seoData.ogDescription) score += 15;
     if (seoData.canonicalUrl) score += 10;
     if (seoData.structuredData) score += 10;
-    
     setSEOScore(Math.min(100, score));
     return score;
   };
@@ -119,14 +112,12 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
   };
 
   const handleSave = () => {
-    if (onSave) {
-      onSave(seoData);
-    }
+    // Save functionality would be implemented here
+    console.log('Saving SEO data:', seoData);
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <div className="border-b border-slate-200 bg-white">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -139,7 +130,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                 <p className="text-sm text-slate-600">Optimize your website for search engines</p>
               </div>
             </div>
-
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
                 Score: {seoScore}/100
@@ -152,69 +142,65 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="flex space-x-1 border-b border-slate-200">
         <button
-            onClick={() => setActiveTab('basic')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'basic' 
-                ? 'border-b-2 border-emerald-500 text-emerald-600' 
-                : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Target className="w-4 h-4 mr-2" />
-            Basic SEO
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('social')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'social' 
-                ? 'border-b-2 border-emerald-500 text-emerald-600' 
-                : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Globe className="w-4 h-4 mr-2" />
-            Social Media
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('technical')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'technical' 
-                ? 'border-b-2 border-emerald-500 text-emerald-600' 
-                : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Technical
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('preview')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'preview' 
-                ? 'border-b-2 border-emerald-500 text-emerald-600' 
-                : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
-          </button>
-        </div>
+          onClick={() => setActiveTab('basic')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'basic' 
+              ? 'border-b-2 border-emerald-500 text-emerald-600' 
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Target className="w-4 h-4 mr-2" />
+          Basic SEO
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('social')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'social' 
+              ? 'border-b-2 border-emerald-500 text-emerald-600' 
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Globe className="w-4 h-4 mr-2" />
+          Social Media
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('technical')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'technical' 
+              ? 'border-b-2 border-emerald-500 text-emerald-600' 
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Technical
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('preview')}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'preview' 
+              ? 'border-b-2 border-emerald-500 text-emerald-600' 
+              : 'border-b-2 border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Eye className="w-4 h-4 mr-2" />
+          Preview
+        </button>
       </div>
 
-      {/* Tab Content */}
-      <div className="space-y-6">
+      <div className="p-6 space-y-6">
         {activeTab === 'basic' && (
           <div className="space-y-6">
-            {/* Title and Description */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Page Title</label>
                 <Input
                   value={seoData.title}
-                  onChange={(e) => setSEOData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSEOData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter page title (30-60 characters)"
                   className="w-full"
                 />
@@ -227,7 +213,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Meta Description</label>
                 <Textarea
                   value={seoData.description}
-                  onChange={(e) => setSEOData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSEOData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Enter meta description (120-160 characters)"
                   rows={3}
                   className="w-full"
@@ -238,7 +224,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
               </div>
             </div>
 
-            {/* Keywords */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Keywords</label>
               <div className="space-y-2">
@@ -246,7 +231,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                   <div key={index} className="flex items-center gap-2">
                     <Input
                       value={keyword}
-                      onChange={(e) => {
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         const newKeywords = [...seoData.keywords];
                         newKeywords[index] = e.target.value;
                         setSEOData(prev => ({ ...prev, keywords: newKeywords }));
@@ -279,19 +264,16 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
               </div>
             </div>
 
-            {/* Canonical URL */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Canonical URL</label>
-                <Input
-                  value={seoData.canonicalUrl}
-                  onChange={(e) => setSEOData(prev => ({ ...prev, canonicalUrl: e.target.value }))}
-                  placeholder="https://example.com/page"
-                  className="w-full"
-                />
-              </div>
+              <Input
+                value={seoData.canonicalUrl}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setSEOData(prev => ({ ...prev, canonicalUrl: e.target.value }))}
+                placeholder="https://example.com/page"
+                className="w-full"
+              />
             </div>
 
-            {/* Action Buttons */}
             <div className="flex items-center gap-4 pt-4">
               <Button
                 variant="outline"
@@ -345,7 +327,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
 
         {activeTab === 'social' && (
           <div className="space-y-6">
-            {/* Open Graph */}
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-900 mb-3">Open Graph Tags</h3>
               
@@ -354,7 +335,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                   <label className="block text-sm font-medium text-slate-700 mb-2">OG Title</label>
                   <Input
                     value={seoData.ogTitle}
-                    onChange={(e) => setSEOData(prev => ({ ...prev, ogTitle: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSEOData(prev => ({ ...prev, ogTitle: e.target.value }))}
                     placeholder="Social media title"
                     className="w-full"
                   />
@@ -364,7 +345,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                   <label className="block text-sm font-medium text-slate-700 mb-2">OG Description</label>
                   <Textarea
                     value={seoData.ogDescription}
-                    onChange={(e) => setSEOData(prev => ({ ...prev, ogDescription: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSEOData(prev => ({ ...prev, ogDescription: e.target.value }))}
                     placeholder="Social media description"
                     rows={3}
                     className="w-full"
@@ -372,16 +353,15 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                 </div>
               </div>
 
-              {/* Twitter Card */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-slate-900 mb-3">Twitter Card</h3>
-              
+                
                 <div className="space-y-2">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Twitter Title</label>
                     <Input
                       value={seoData.twitterTitle}
-                      onChange={(e) => setSEOData(prev => ({ ...prev, twitterTitle: e.target.value }))}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSEOData(prev => ({ ...prev, twitterTitle: e.target.value }))}
                       placeholder="Twitter card title"
                       className="w-full"
                     />
@@ -391,7 +371,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                     <label className="block text-sm font-medium text-slate-700 mb-2">Twitter Description</label>
                     <Textarea
                       value={seoData.twitterDescription}
-                      onChange={(e) => setSEOData(prev => ({ ...prev, twitterDescription: e.target.value }))}
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSEOData(prev => ({ ...prev, twitterDescription: e.target.value }))}
                       placeholder="Twitter card description"
                       rows={2}
                       className="w-full"
@@ -405,7 +385,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
 
         {activeTab === 'technical' && (
           <div className="space-y-6">
-            {/* Sitemap */}
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-900 mb-3">Sitemap Generation</h3>
               
@@ -413,7 +392,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                 <div className="flex items-center gap-2">
                   <Input
                     value={seoData.sitemapUrl}
-                    onChange={(e) => setSEOData(prev => ({ ...prev, sitemapUrl: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSEOData(prev => ({ ...prev, sitemapUrl: e.target.value }))}
                     placeholder="https://example.com/sitemap.xml"
                     className="flex-1"
                   />
@@ -442,7 +421,7 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {/* Download sitemap */}}
+                      onClick={() => {}}
                     >
                       <Download className="w-3 h-3 mr-1" />
                       Download
@@ -452,14 +431,13 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
               </div>
             </div>
 
-            {/* Robots.txt */}
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-900 mb-3">Robots.txt</h3>
               
               <div className="space-y-2">
                 <Textarea
                   value={seoData.robotsTxt}
-                  onChange={(e) => setSEOData(prev => ({ ...prev, robotsTxt: e.target.value }))}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSEOData(prev => ({ ...prev, robotsTxt: e.target.value }))}
                   placeholder="User-agent: *\nAllow: /\nDisallow: /admin/"
                   rows={6}
                   className="w-full font-mono text-xs"
@@ -488,13 +466,12 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
               </div>
             </div>
 
-            {/* Structured Data */}
             <div className="space-y-4">
               <h3 className="font-semibold text-slate-900 mb-3">Structured Data (Schema.org)</h3>
               
               <Textarea
                 value={JSON.stringify(seoData.structuredData || {}, null, 2)}
-                onChange={(e) => setSEOData(prev => ({ ...prev, structuredData: JSON.parse(e.target.value) }))}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setSEOData(prev => ({ ...prev, structuredData: JSON.parse(e.target.value) }))}
                 placeholder='{"@context": "https://schema.org","@type": "WebSite"}'
                 rows={8}
                 className="w-full font-mono text-xs"
@@ -508,7 +485,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
             <h3 className="font-semibold text-slate-900 mb-3">SEO Preview</h3>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Google Preview */}
               <Card className="p-4">
                 <h4 className="font-medium text-slate-900 mb-2">Google Search Result</h4>
                 <div className="space-y-2 text-sm">
@@ -518,7 +494,6 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
                 </div>
               </Card>
 
-              {/* Social Media Preview */}
               <Card className="p-4">
                 <h4 className="font-medium text-slate-900 mb-2">Social Media Preview</h4>
                 <div className="space-y-2">
@@ -537,12 +512,11 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 pt-4">
+        <div className="flex items-center gap-2 pt-4 border-t border-slate-200">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {/* Preview functionality */}}
+            onClick={() => {}}
           >
             <Eye className="w-3 h-3 mr-1" />
             Preview SEO
@@ -561,3 +535,5 @@ export default function AdminSEOPage({ currentSEO, onSave }: SEOToolsProps) {
     </div>
   );
 }
+
+export default AdminSEOPage;
