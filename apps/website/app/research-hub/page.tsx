@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +38,6 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export const metadata = createMetadata(
-  "Research Hub",
-  "Comprehensive research center with projects, publications, and academic activities.",
-  "/research-hub",
-);
-
-export const revalidate = 3600;
 
 const researchSections = [
   {
@@ -197,8 +192,6 @@ const researchAreas = [
     color: "text-green-600"
   }
 ];
-
-"use client";
 
 export default function ResearchHubPage() {
   const router = useRouter();

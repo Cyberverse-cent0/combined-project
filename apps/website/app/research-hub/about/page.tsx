@@ -302,8 +302,6 @@ export default function ResearchAboutPage() {
                 </div>
               </div>
             </section>
-              </div>
-            </section>
 
             {/* ==================== LAB INTRODUCTION ==================== */}
             <section className="bg-white rounded-3xl p-10 shadow-sm">
@@ -551,7 +549,7 @@ export default function ResearchAboutPage() {
                 </Link>
               </Button>
             </section>
-          </main>
+          </div>
         </div>
       </div>
     </div>
