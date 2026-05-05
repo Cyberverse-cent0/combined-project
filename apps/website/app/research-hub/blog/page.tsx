@@ -91,7 +91,7 @@ export default function ResearchBlogPage() {
       <div className="flex gap-8">
         <ResearchHubSidebar />
         
-        <div className="flex-1 space-y-8">
+        <div className="flex-1 lg:ml-80 pt-20 space-y-8">
           {/* Header */}
           <div>
             <h1 className="text-3xl font-bold mb-4">Research Blog & Portfolio</h1>

@@ -217,40 +217,42 @@ export function ContentManagementSection({ onNavigate }: ContentManagementSectio
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-slate-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Content Management
           </h1>
-          <p className="text-slate-600 mt-2">Manage all website content including pages, research, testimonials, and services</p>
+          <p className="text-slate-600 text-sm mt-1">Manage pages, research, testimonials, and services</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => onNavigate?.('dashboard')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1"
           >
-            <Home className="w-4 h-4" />
-            Back to Dashboard
+            <Home className="w-3 h-3" />
+            Back
           </Button>
           <Button 
             onClick={() => onNavigate?.('home-edit')}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+            size="sm"
+            className="flex items-center gap-1 bg-orange-600 hover:bg-orange-700"
           >
-            <Edit3 className="w-4 h-4" />
-            Edit Home Page
+            <Edit3 className="w-3 h-3" />
+            Edit Home
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleCreateNew}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Content
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleCreateNew}>
+            <Plus className="w-3 h-3 mr-1" />
+            Create
           </Button>
         </div>
       </div>
 
-      {/* Filters and Search */}
-      <Card className="p-6 bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+      {/* Compact Filters */}
+      <Card className="p-3 bg-white border-slate-200">
+        <div className="flex flex-col lg:flex-row gap-3 mb-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -258,7 +260,7 @@ export function ContentManagementSection({ onNavigate }: ContentManagementSectio
                 placeholder="Search content..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 bg-white border-slate-300 focus:border-blue-500 focus:ring-blue-500/20"
+                className="pl-10 h-8 bg-white border-slate-300 focus:border-blue-500 focus:ring-blue-500/20"
               />
             </div>
           </div>
@@ -267,7 +269,7 @@ export function ContentManagementSection({ onNavigate }: ContentManagementSectio
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-3 py-2 h-10 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-2 py-1 h-8 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
             >
               <option value="all">All Types</option>
               <option value="page">Pages</option>
@@ -279,7 +281,7 @@ export function ContentManagementSection({ onNavigate }: ContentManagementSectio
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 h-10 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-2 py-1 h-8 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -308,99 +310,98 @@ export function ContentManagementSection({ onNavigate }: ContentManagementSectio
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
-            <p className="text-2xl font-bold text-blue-600">{content.length}</p>
-            <p className="text-sm text-slate-600">Total Content</p>
+        {/* Compact Stats */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center p-2 bg-white rounded border border-slate-200">
+            <p className="text-lg font-bold text-blue-600">{content.length}</p>
+            <p className="text-xs text-slate-600">Total</p>
           </div>
-          <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
-            <p className="text-2xl font-bold text-green-600">{content.filter(c => c.status === 'published').length}</p>
-            <p className="text-sm text-slate-600">Published</p>
+          <div className="text-center p-2 bg-white rounded border border-slate-200">
+            <p className="text-lg font-bold text-green-600">{content.filter(c => c.status === 'published').length}</p>
+            <p className="text-xs text-slate-600">Published</p>
           </div>
-          <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
-            <p className="text-2xl font-bold text-yellow-600">{content.filter(c => c.status === 'draft').length}</p>
-            <p className="text-sm text-slate-600">Drafts</p>
+          <div className="text-center p-2 bg-white rounded border border-slate-200">
+            <p className="text-lg font-bold text-yellow-600">{content.filter(c => c.status === 'draft').length}</p>
+            <p className="text-xs text-slate-600">Drafts</p>
           </div>
-          <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
-            <p className="text-2xl font-bold text-purple-600">{content.reduce((sum, c) => sum + (c.views || 0), 0).toLocaleString()}</p>
-            <p className="text-sm text-slate-600">Total Views</p>
+          <div className="text-center p-2 bg-white rounded border border-slate-200">
+            <p className="text-lg font-bold text-purple-600">{(content.reduce((sum, c) => sum + (c.views || 0), 0) / 1000).toFixed(1)}k</p>
+            <p className="text-xs text-slate-600">Views</p>
           </div>
         </div>
       </Card>
 
       {/* Content Display */}
       {viewMode === 'list' ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredContent.map((item) => (
-            <Card key={item.id} className="p-6 hover:shadow-lg transition-all duration-300 bg-white border-slate-200">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Badge className={getTypeColor(item.type)}>
-                    {item.type}
+            <Card key={item.id} className="p-3 hover:shadow-md transition-all duration-300 bg-white border-slate-200">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Badge className={`${getTypeColor(item.type)} text-xs`} variant="outline">
+                    {item.type.charAt(0).toUpperCase()}
                   </Badge>
-                  <Badge className={getStatusColor(item.status)}>
-                    {item.status}
+                  <Badge className={`${getStatusColor(item.status)} text-xs`} variant="outline">
+                    {item.status === 'published' ? '✓' : '○'}
                   </Badge>
                   {item.views && (
-                    <Badge variant="outline" className="text-blue-600">
+                    <Badge variant="outline" className="text-blue-600 text-xs">
                       <Eye className="w-3 h-3 mr-1" />
                       {item.views.toLocaleString()}
                     </Badge>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(item)}>
-                    <Edit3 className="w-4 h-4" />
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(item)} className="h-6 w-6 p-0">
+                    <Edit3 className="w-3 h-3" />
                   </Button>
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4" />
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Eye className="w-3 h-3" />
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm" 
                     onClick={() => handleDelete(item.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{item.title}</h3>
-                  <div className="flex items-center gap-4 text-sm text-slate-600 mb-3">
+                  <h3 className="text-base font-semibold text-slate-900 mb-1">{item.title}</h3>
+                  <div className="flex items-center gap-3 text-xs text-slate-600 mb-2">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      Created: {new Date(item.createdAt).toLocaleDateString()}
+                      <Calendar className="w-3 h-3" />
+                      {new Date(item.createdAt).toLocaleDateString()}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      Updated: {new Date(item.updatedAt).toLocaleDateString()}
-                    </span>
+                    <span>•</span>
+                    <span>{new Date(item.updatedAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {item.tags.map((tag, index) => (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {item.tags.slice(0, 3).map((tag, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
-                      <Tag className="w-3 h-3 mr-1" />
                       {tag}
                     </Badge>
                   ))}
+                  {item.tags.length > 3 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{item.tags.length - 3}
+                    </Badge>
+                  )}
                 </div>
                 
-                <div className="text-sm text-slate-600">
-                  {item.content.length > 150 ? `${item.content.substring(0, 150)}...` : item.content}
+                <div className="text-sm text-slate-600 line-clamp-2">
+                  {item.content}
                 </div>
                 
                 {item.seoTitle && (
-                  <div className="mt-3 p-3 bg-slate-50 rounded text-xs">
-                    <div className="font-medium text-slate-700">SEO Title: {item.seoTitle}</div>
-                    {item.seoDescription && (
-                      <div className="text-slate-600">SEO Description: {item.seoDescription}</div>
-                    )}
+                  <div className="mt-2 p-2 bg-slate-50 rounded text-xs">
+                    <div className="font-medium text-slate-700">{item.seoTitle}</div>
                   </div>
                 )}
               </div>

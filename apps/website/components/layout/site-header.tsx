@@ -167,15 +167,6 @@ export function SiteHeader() {
             <div className="flex items-center gap-2">
               <Button 
                 asChild 
-                size="sm" 
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
-              >
-                <a href={scholarsUrl}>
-                  🎓 Scholar Forge
-                </a>
-              </Button>
-              <Button 
-                asChild 
                 size="sm"
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0"
               >

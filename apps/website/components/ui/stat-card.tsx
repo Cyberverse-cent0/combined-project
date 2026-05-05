@@ -2,23 +2,55 @@
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import { 
+  Target, 
+  Globe, 
+  Heart, 
+  Brain,
+  Microscope,
+  Users,
+  Lightbulb,
+  CheckCircle,
+  Shield,
+  Lock,
+  Eye,
+  ArrowRight,
+  Mail
+} from "lucide-react";
 
 interface StatCardProps {
   value: string | number;
   label: string;
-  icon?: LucideIcon;
+  icon?: string;
   color?: string;
   className?: string;
 }
 
+const iconMap: Record<string, any> = {
+  Target,
+  Globe,
+  Heart,
+  Brain,
+  Microscope,
+  Users,
+  Lightbulb,
+  CheckCircle,
+  Shield,
+  Lock,
+  Eye,
+  ArrowRight,
+  Mail
+};
+
 export function StatCard({ 
   value, 
   label, 
-  icon: Icon, 
+  icon: iconName, 
   color = "text-blue-600", 
   className 
 }: StatCardProps) {
+  const Icon = iconName ? iconMap[iconName] : null;
+  
   return (
     <Card className={cn("p-6 text-center group hover:shadow-lg transition-all duration-300 hover:-translate-y-1", className)}>
       {Icon && (

@@ -147,8 +147,8 @@ export function AdminLayout({ user, children }: AdminLayoutProps) {
         />
 
         {/* Content area */}
-        <div className="flex-1 lg:ml-64 xl:ml-72">
-          <div className="p-4 lg:p-6">
+        <div className="flex-1 lg:ml-56">
+          <div className="p-3 lg:p-4">
             {children}
           </div>
         </div>

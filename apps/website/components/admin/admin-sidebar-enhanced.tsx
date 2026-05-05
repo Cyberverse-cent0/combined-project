@@ -73,7 +73,9 @@ import {
   Command,
   ZapIcon,
   Rocket,
-  Flame
+  Flame,
+  Brain,
+  Timer
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -103,6 +105,43 @@ const sidebarItems: SidebarItem[] = [
     isNew: true
   },
   {
+    id: "research",
+    label: "Research Hub",
+    icon: Brain,
+    children: [
+      {
+        id: "projects",
+        label: "Research Projects",
+        icon: Target,
+        href: "/admin",
+        description: "Manage research projects and portfolio",
+        isHot: true
+      },
+      {
+        id: "tasks",
+        label: "Research Tasks",
+        icon: Timer,
+        href: "/admin",
+        description: "Track research milestones and deadlines",
+        isNew: true
+      },
+      {
+        id: "publications",
+        label: "Publications",
+        icon: BookOpen,
+        href: "/admin",
+        description: "Academic papers and publications"
+      },
+      {
+        id: "awards",
+        label: "Awards & Grants",
+        icon: Award,
+        href: "/admin",
+        description: "Research funding and recognition"
+      }
+    ]
+  },
+  {
     id: "content",
     label: "Content Management",
     icon: Edit3,
@@ -113,6 +152,14 @@ const sidebarItems: SidebarItem[] = [
         icon: Home,
         href: "/admin/content/home",
         description: "Edit home page content, hero section, and basic information",
+        isHot: true
+      },
+      {
+        id: "homepage",
+        label: "Homepage Content",
+        icon: Home,
+        href: "/admin",
+        description: "Manage all homepage content",
         isHot: true
       },
       {
@@ -384,7 +431,7 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebarEnhanced({ isOpen, onToggle, activePanel, onPanelChange, user }: AdminSidebarProps) {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['content', 'media']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['research', 'content', 'media']));
   const [searchTerm, setSearchTerm] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [recentItems, setRecentItems] = useState<string[]>(['dashboard', 'content', 'media']);
@@ -555,7 +602,7 @@ export function AdminSidebarEnhanced({ isOpen, onToggle, activePanel, onPanelCha
         fixed top-0 left-0 h-full bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-r border-slate-200/50 z-50 transition-all duration-500 ease-in-out
         ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto lg:shadow-xl
-        w-72 xl:w-80 flex flex-col
+        w-56 xl:w-64 flex flex-col
       `}>
         {/* Enhanced Header */}
         <div className="p-6 border-b border-slate-200/50 bg-gradient-to-r from-blue-500/10 to-purple-600/10">
