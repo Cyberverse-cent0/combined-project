@@ -24,9 +24,10 @@ interface AdminLayoutProps {
     displayName: string;
     role: string;
   };
+  children: React.ReactNode;
 }
 
-export function AdminLayout({ user }: AdminLayoutProps) {
+export function AdminLayout({ user, children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<Panel>("overview");
 
@@ -148,95 +149,7 @@ export function AdminLayout({ user }: AdminLayoutProps) {
         {/* Content area */}
         <div className="flex-1 lg:ml-64 xl:ml-72">
           <div className="p-4 lg:p-6">
-            {/* Dynamic content based on active panel */}
-            {activePanel === 'overview' && (
-              <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  <Card className="p-6">
-                    <h3 className="font-semibold text-slate-900 mb-2">Dashboard Overview</h3>
-                    <p className="text-sm text-slate-600">Welcome to admin dashboard. Select a section from the sidebar to begin managing your content.</p>
-                  </Card>
-                </div>
-              </div>
-            )}
-            
-            {activePanel === 'content' && (
-              <div className="space-y-6">
-                <AdminContentEditor 
-                  initialContent={{
-                    title: 'Welcome Content',
-                    content: '<p>Start creating your content here...</p>',
-                    status: 'draft',
-                    lastModified: new Date().toISOString()
-                  }}
-                  onSave={(content) => {/* Save to backend */}}
-                  onPreview={(content) => {/* Show preview */}}
-                  realTimeSync={true}
-                />
-              </div>
-            )}
-            
-                        
-            {activePanel === 'research' && (
-              <div className="space-y-6">
-                <AdminContentEditor 
-                  initialContent={{
-                    title: 'Research Content',
-                    content: '<p>Start creating your research content here...</p>',
-                    status: 'draft',
-                    lastModified: new Date().toISOString()
-                  }}
-                  onSave={(content) => {/* Save to backend */}}
-                  onPreview={(content) => {/* Show preview */}}
-                  realTimeSync={true}
-                />
-              </div>
-            )}
-            
-            {activePanel === 'media' && (
-              <div className="space-y-6">
-                <div className="text-center p-8">
-                  <Images className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="font-semibold text-slate-900 mb-2">Media Library</h3>
-                  <p className="text-sm text-slate-600">Upload and manage your media files here.</p>
-                </div>
-              </div>
-            )}
-            
-            {activePanel === 'seo' && (
-              <div className="space-y-6">
-                <AdminSEOTools 
-                  onSave={(seoData) => {/* Save to backend */}}
-                  onPreview={(seoData) => {/* Show preview */}}
-                />
-              </div>
-            )}
-            
-            {activePanel === 'testimonials' && (
-              <div className="space-y-6">
-                <AdminContentEditor 
-                  initialContent={{
-                    title: 'Testimonial Content',
-                    content: '<p>Start creating your testimonials here...</p>',
-                    status: 'draft',
-                    lastModified: new Date().toISOString()
-                  }}
-                  onSave={(content) => {/* Save to backend */}}
-                  onPreview={(content) => {/* Show preview */}}
-                  realTimeSync={true}
-                />
-              </div>
-            )}
-            
-            {activePanel && ['overview', 'content', 'research', 'media', 'seo', 'testimonials'].includes(activePanel) === false && (
-              <div className="space-y-6">
-                <div className="text-center p-8">
-                  <Settings className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="font-semibold text-slate-900 mb-2">Coming Soon</h3>
-                  <p className="text-sm text-slate-600">This feature is under development.</p>
-                </div>
-              </div>
-            )}
+            {children}
           </div>
         </div>
       </div>

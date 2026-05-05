@@ -1,13 +1,11 @@
 # Combined Project
 
-A full-stack web application combining a Next.js website, Scholar Forge application, and Go microservices for high-performance computing operations.
+A full-stack web application combining a Next.js website and Go microservices for high-performance computing operations.
 
 ## Architecture
 
 - **Website Frontend**: Next.js (React) - Main website with admin panel
-- **Scholar Forge Frontend**: React/Vite - Academic collaboration platform
 - **Website Backend**: Python/Flask - Admin API and content management
-- **Scholars API**: Node.js - Scholar Forge backend API
 - **Go Microservices**: High-performance services for CPU-intensive operations
   - Password Service (Port 9001) - PBKDF2 password hashing
   - Telemetry Service (Port 9002) - Monitoring and metrics
@@ -61,7 +59,6 @@ cd combined-project
 This script automatically:
 - Installs PM2 and pnpm
 - Installs all dependencies
-- Builds Scholar Forge
 - Optionally builds Go services
 - Starts all services with PM2
 
@@ -130,13 +127,6 @@ pip install -r requirements.txt
 cd ../..
 ```
 
-**Scholar Forge:**
-```bash
-cd Schoolars-work-bench
-pnpm install
-cd ..
-```
-
 **Go Microservices:**
 ```bash
 cd website/backend/go-services
@@ -152,21 +142,6 @@ cd website/backend
 cp .env.example .env
 # Edit .env with your configuration
 cd ../..
-```
-
-**Scholar Forge (.env):**
-```bash
-cd Schoolars-work-bench
-cp .env.example .env
-# Edit .env with your configuration
-BASE_PATH=/scholars
-cd ..
-```
-
-**Enable Go Services (Optional):**
-```bash
-export USE_GO_PASSWORD_SERVICE=true
-export USE_GO_TELEMETRY_SERVICE=true
 ```
 
 #### 4. Start Services with PM2
@@ -199,25 +174,9 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    # Scholar Forge (path-based routing)
-    location /scholars {
-        proxy_pass http://localhost:4500;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
     # Website backend API
     location /api {
         proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-    }
-
-    # Scholars API
-    location /scholars-api {
-        proxy_pass http://localhost:8081;
         proxy_set_header Host $host;
     }
 }
@@ -233,9 +192,7 @@ sudo systemctl reload nginx
 
 - **Main Website**: http://localhost:3000 or http://your-domain.com
 - **Admin Panel**: http://localhost:3000/admin
-- **Scholar Forge**: http://localhost:4500 or http://your-domain.com/scholars
 - **Website API**: http://localhost:8000
-- **Scholars API**: http://localhost:8081
 
 ### Option 2: Docker Deployment
 
@@ -263,8 +220,6 @@ docker-compose down
 Docker Compose will expose services on the following ports:
 - **Website Frontend**: 3000
 - **Website Backend**: 8000
-- **Scholar Forge Frontend**: 4500
-- **Scholars API**: 8081
 - **Go Password Service**: 9001
 - **Go Telemetry Service**: 9002
 - **Go Image Service**: 9003
@@ -392,27 +347,12 @@ USE_GO_TELEMETRY_SERVICE=true
 GO_TELEMETRY_SERVICE_URL=http://localhost:9002
 ```
 
-### Scholar Forge (.env)
-
-```env
-# API
-PORT=8081
-DATABASE_URL=your-database-url
-
-# Frontend
-BASE_PATH=/scholars
-WEBSITE_URL=http://localhost:3000
-CORS_ORIGIN=http://localhost:3000
-```
-
 ## Port Configuration
 
 | Service | Port | Description |
 |---------|------|-------------|
 | Website Frontend | 3000 | Next.js main website |
 | Website Backend | 8000 | Python admin API |
-| Scholar Forge Frontend | 4500 | React Scholar Forge app |
-| Scholars API | 8081 | Node.js Scholar Forge API |
 | Go Password Service | 9001 | Password hashing |
 | Go Telemetry Service | 9002 | Monitoring/metrics |
 | Go Image Service | 9003 | Image processing |
@@ -498,12 +438,6 @@ source venv/bin/activate
 python server.py
 ```
 
-**Scholar Forge:**
-```bash
-cd Schoolars-work-bench
-pnpm dev
-```
-
 ### Running Tests
 
 ```bash
@@ -521,7 +455,7 @@ python -m pytest
 - `start-pm2.sh` - Start all services with PM2
 - `stop-pm2.sh` - Stop all services
 - `restart-pm2.sh` - Restart all services (zero-downtime)
-- `deploy-both-projects.sh` - Deploy both website and Scholar Forge
+- `deploy-both-projects.sh` - Deploy website with systemd detection
 - `deploy-docker.sh` - Docker deployment script
 - `deploy-systemd-bare-metal.sh` - Systemd service setup
 
@@ -544,10 +478,6 @@ Logs are stored in the `logs/` directory:
 - `website-frontend-out.log`
 - `website-backend-error.log`
 - `website-backend-out.log`
-- `scholar-forge-error.log`
-- `scholar-forge-out.log`
-- `scholars-api-error.log`
-- `scholars-api-out.log`
 - `go-*-service-error.log`
 - `go-*-service-out.log`
 

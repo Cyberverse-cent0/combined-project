@@ -16,34 +16,6 @@ module.exports = {
       max_memory_restart: '512M'
     },
     {
-      name: 'scholar-forge-frontend',
-      script: 'pnpm',
-      args: 'dev',
-      cwd: '/home/codecrafter/Documents/combined/Schoolars-work-bench/artifacts/scholar-forge',
-      instances: 1,
-      exec_mode: 'fork',
-      env: { NODE_ENV: 'development' },
-      error_file: './logs/scholar-forge-error.log',
-      out_file: './logs/scholar-forge-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      autorestart: true,
-      max_memory_restart: '256M'
-    },
-    {
-      name: 'scholars-api',
-      script: 'npm',
-      args: 'start',
-      cwd: '/home/codecrafter/Documents/combined/Schoolars-work-bench/artifacts/api-server',
-      instances: 1,
-      exec_mode: 'fork',
-      env: { NODE_ENV: 'development', PORT: 8081 },
-      error_file: './logs/scholars-api-error.log',
-      out_file: './logs/scholars-api-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      autorestart: true,
-      max_memory_restart: '256M'
-    },
-    {
       name: 'website-backend',
       script: 'python3',
       args: 'backend/server.py',

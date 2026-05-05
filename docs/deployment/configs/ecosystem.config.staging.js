@@ -13,16 +13,6 @@ function generateCpuAffinity(startCore, count, totalCores) {
 }
 
 const websiteAffinity = generateCpuAffinity(0, resources.websiteInstances, resources.totalCores);
-const scholarForgeAffinity = generateCpuAffinity(
-  resources.websiteInstances, 
-  resources.scholarForgeInstances, 
-  resources.totalCores
-);
-const scholarsApiAffinity = generateCpuAffinity(
-  resources.websiteInstances + resources.scholarForgeInstances,
-  resources.scholarsApiInstances,
-  resources.totalCores
-);
 
 module.exports = {
   apps: [
@@ -40,36 +30,6 @@ module.exports = {
       autorestart: true,
       max_memory_restart: resources.memoryPerInstance,
       cpu_affinity: websiteAffinity
-    },
-    {
-      name: 'scholar-forge-frontend',
-      script: 'npm',
-      args: 'run preview',
-      cwd: '/home/codecrafter/Documents/combined/Schoolars-work-bench/artifacts/scholar-forge',
-      instances: Math.max(1, Math.floor(resources.scholarForgeInstances * 0.5)),
-      exec_mode: 'cluster',
-      env: { NODE_ENV: 'staging', PORT: 4500 },
-      error_file: './logs/scholar-forge-error.log',
-      out_file: './logs/scholar-forge-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      autorestart: true,
-      max_memory_restart: resources.memoryPerInstance,
-      cpu_affinity: scholarForgeAffinity
-    },
-    {
-      name: 'scholars-api',
-      script: 'npm',
-      args: 'start',
-      cwd: '/home/codecrafter/Documents/combined/Schoolars-work-bench/artifacts/api-server',
-      instances: Math.max(1, Math.floor(resources.scholarsApiInstances * 0.5)),
-      exec_mode: 'cluster',
-      env: { NODE_ENV: 'staging', PORT: 8081 },
-      error_file: './logs/scholars-api-error.log',
-      out_file: './logs/scholars-api-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      autorestart: true,
-      max_memory_restart: resources.memoryPerInstance,
-      cpu_affinity: scholarsApiAffinity
     },
     {
       name: 'website-backend',

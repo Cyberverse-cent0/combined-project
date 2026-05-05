@@ -238,12 +238,10 @@ create_env_file() {
 # Production Environment Configuration
 DOMAIN_NAME=$DOMAIN
 WEBSITE_URL=https://$DOMAIN
-SCHOLARS_URL=https://$DOMAIN/scholars
 CORS_ORIGIN=https://$DOMAIN
 ADMIN_ALLOWED_ORIGIN=https://$DOMAIN
 NEXTAUTH_URL=https://$DOMAIN
 NEXT_PUBLIC_SITE_URL=https://$DOMAIN
-NEXT_PUBLIC_SCHOLARS_URL=https://$DOMAIN/scholars
 
 # Admin Configuration
 ADMIN_EMAIL=admin@$DOMAIN
@@ -251,7 +249,6 @@ ADMIN_PASSWORD=$ADMIN_PASSWORD
 
 # Backend Configuration
 WEBSITE_BACKEND_URL=http://localhost:8000
-SCHOLARS_API_PORT=8081
 
 # Go Services
 USE_GO_PASSWORD_SERVICE=true
@@ -295,16 +292,12 @@ create_pm2_config() {
         FRONTEND_INSTANCES=1
         FRONTEND_MEMORY="256M"
         BACKEND_MEMORY="128M"
-        SCHOLAR_MEMORY="128M"
-        API_MEMORY="128M"
         EXEC_MODE="fork"
         log "Optimizing for low-resource system (${RAM}GB RAM, ${CORES} cores)"
     else
         FRONTEND_INSTANCES=2
         FRONTEND_MEMORY="1G"
         BACKEND_MEMORY="512M"
-        SCHOLAR_MEMORY="512M"
-        API_MEMORY="512M"
         EXEC_MODE="cluster"
         log "Using standard configuration (2GB+ RAM, 2+ cores)"
     fi
@@ -338,32 +331,6 @@ module.exports = {
       autorestart: true,
       max_memory_restart: '$BACKEND_MEMORY'
     },
-    {
-      name: 'scholar-forge-frontend',
-      script: 'node',
-      args: 'server.cjs',
-      cwd: '$INSTALL_DIR/Schoolars-work-bench/artifacts/scholar-forge',
-      instances: 1,
-      exec_mode: 'fork',
-      env: { NODE_ENV: 'production' },
-      error_file: '/var/log/$PROJECT_NAME/scholar-forge-error.log',
-      out_file: '/var/log/$PROJECT_NAME/scholar-forge-out.log',
-      autorestart: true,
-      max_memory_restart: '$SCHOLAR_MEMORY'
-    },
-    {
-      name: 'scholars-api',
-      script: 'npm',
-      args: 'start',
-      cwd: '$INSTALL_DIR/Schoolars-work-bench/artifacts/api-server',
-      instances: 1,
-      exec_mode: 'fork',
-      env: { NODE_ENV: 'production', PORT: 8081 },
-      error_file: '/var/log/$PROJECT_NAME/scholars-api-error.log',
-      out_file: '/var/log/$PROJECT_NAME/scholars-api-out.log',
-      autorestart: true,
-      max_memory_restart: '$API_MEMORY'
-    }
   ]
 };
 EOF
@@ -439,7 +406,6 @@ print_summary() {
     echo -e "Project Directory: ${BLUE}$INSTALL_DIR${NC}"
     echo -e "Website URL: ${BLUE}http://localhost${NC}"
     echo -e "Admin URL: ${BLUE}http://localhost/admin${NC}"
-    echo -e "Scholar Forge: ${BLUE}http://localhost/scholars${NC}"
     echo -e "Admin Password: ${YELLOW}$ADMIN_PASSWORD${NC}"
     echo ""
     echo -e "${GREEN}=== Service Management ===${NC}"

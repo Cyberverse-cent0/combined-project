@@ -73,7 +73,7 @@ install_system_deps_custom() {
 # Step 2: Setup PostgreSQL databases (using OS detection library)
 setup_databases_custom() {
     if has_systemd; then
-        setup_databases "$DB_USER" "$DB_PASSWORD" "$DB_NAME_WEBSITE" "$DB_NAME_SCHOLARS"
+        setup_databases "$DB_USER" "$DB_PASSWORD" "$DB_NAME_WEBSITE"
     else
         log "Systemd not available, using service command for PostgreSQL..."
         # Detect PostgreSQL version
@@ -108,13 +108,6 @@ setup_databases_custom() {
             warn "Database $DB_NAME_WEBSITE already exists"
         fi
         
-        if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $DB_NAME_SCHOLARS; then
-            sudo -u postgres psql -c "CREATE DATABASE $DB_NAME_SCHOLARS;"
-            log "Created database $DB_NAME_SCHOLARS"
-        else
-            warn "Database $DB_NAME_SCHOLARS already exists"
-        fi
-        
         # Create user if not exists
         if ! sudo -u postgres psql -c "\du" | grep -qw $DB_USER; then
             sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
@@ -125,7 +118,6 @@ setup_databases_custom() {
         
         # Grant privileges
         sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_WEBSITE TO $DB_USER;"
-        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_SCHOLARS TO $DB_USER;"
         
         log "Database setup completed"
     fi
@@ -182,45 +174,6 @@ setup_website() {
     log "Website project setup completed"
 }
 
-# Step 4: Clone and setup Schoolars-work-bench project
-setup_scholars() {
-    log "Setting up Schoolars-work-bench project..."
-    
-    if [ ! -d "$SCHOLARS_DIR" ]; then
-        log "Cloning Schoolars-work-bench repository..."
-        git clone "$SCHOLARS_REPO" "$SCHOLARS_DIR"
-    else
-        log "Schoolars-work-bench directory exists, pulling latest changes..."
-        cd "$SCHOLARS_DIR"
-        git pull
-    fi
-    
-    cd "$SCHOLARS_DIR"
-    
-    # Setup .env
-    if [ ! -f .env ]; then
-        cp .env.example .env
-        sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS|" .env
-        sed -i "s|NODE_ENV=.*|NODE_ENV=production|" .env
-        sed -i "s|BASE_PATH=.*|BASE_PATH=$SCHOLARS_PATH|" .env
-        warn "Please update SESSION_SECRET, GOOGLE_CLIENT_ID, and YAHOO credentials in $SCHOLARS_DIR/.env"
-    else
-        # Update BASE_PATH in existing .env
-        sed -i "s|BASE_PATH=.*|BASE_PATH=$SCHOLARS_PATH|" .env
-    fi
-    
-    # Install dependencies with pnpm (skip build)
-    log "Installing Schoolars-work-bench dependencies..."
-    cd "$SCHOLARS_DIR"
-    pnpm install --ignore-scripts
-    
-    # Build API server only
-    cd "$SCHOLARS_DIR/artifacts/api-server"
-    pnpm install
-    pnpm build
-    
-    log "Schoolars-work-bench project setup completed"
-}
 
 # Step 5: Create systemd services or PM2 ecosystem
 create_systemd_services() {
@@ -234,11 +187,10 @@ create_systemd_services() {
 }
 
 create_pm2_ecosystem() {
-    log "Setting up PM2 ecosystem for both projects..."
+    log "Setting up PM2 ecosystem for website project..."
     
     # Copy ecosystem configs to projects
     cp /home/codecrafter/Documents/combined/ecosystem.config.js "$WEBSITE_DIR/" 2>/dev/null || true
-    cp /home/codecrafter/Documents/combined/ecosystem.config.js "$SCHOLARS_DIR/" 2>/dev/null || true
     
     # Create PM2 startup script
     cat > "$WEBSITE_DIR/start-pm2.sh" << 'EOF'
@@ -315,31 +267,9 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
     
-    # Scholars service (API server only)
-    cat > /tmp/scholars.service << EOF
-[Unit]
-Description=ScholarForge API Server
-After=network.target
-
-[Service]
-Type=simple
-User=$USER
-WorkingDirectory=$SCHOLARS_DIR/artifacts/api-server
-Environment=NODE_ENV=production
-Environment=PORT=8080
-Environment=DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME_SCHOLARS
-ExecStart=/usr/bin/pnpm start
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    
     # Install services
     run_root cp /tmp/website-frontend.service /etc/systemd/system/
     run_root cp /tmp/website-backend.service /etc/systemd/system/
-    run_root cp /tmp/scholars.service /etc/systemd/system/
     run_root systemctl daemon-reload
     
     log "Systemd services created"
@@ -402,9 +332,7 @@ configure_nginx() {
     log "Service endpoints:"
     log "  - Main website: http://$DOMAIN_NAME"
     log "  - Admin panel: http://$DOMAIN_NAME/admin"
-    log "  - Scholar Forge: http://$DOMAIN_NAME/scholars"
     log "  - Admin API: http://$DOMAIN_NAME/api/"
-    log "  - Scholars API: http://$DOMAIN_NAME/scholars-api/"
     
     # Ask about SSL certificate
     log ""
@@ -423,15 +351,14 @@ start_services() {
         cd /home/codecrafter/Documents/combined
         ./start-pm2.sh
     else
-        run_root systemctl enable website-frontend website-backend scholars
-        run_root systemctl start website-frontend website-backend scholars
+        run_root systemctl enable website-frontend website-backend
+        run_root systemctl start website-frontend website-backend
         
         sleep 5
         
         log "Checking service status..."
         run_root systemctl status website-frontend --no-pager || true
         run_root systemctl status website-backend --no-pager || true
-        run_root systemctl status scholars --no-pager || true
     fi
     
     log "Services started"
@@ -459,7 +386,6 @@ main() {
     install_system_deps_custom
     setup_databases_custom
     setup_website
-    setup_scholars
     create_systemd_services
     configure_nginx
     configure_firewall_custom
@@ -469,7 +395,6 @@ main() {
     log "=== Deployment Completed Successfully ==="
     log ""
     log "Website: http://$DOMAIN_NAME"
-    log "Scholars: http://$DOMAIN_NAME$SCHOLARS_PATH"
     log ""
     
     if [ "$DEPLOYMENT_MODE" = "pm2" ]; then
@@ -483,19 +408,17 @@ main() {
         log "  pm2 logs"
     else
         log "Service management:"
-        log "  sudo systemctl status website-frontend website-backend scholars"
-        log "  sudo systemctl restart website-frontend website-backend scholars"
+        log "  sudo systemctl status website-frontend website-backend"
+        log "  sudo systemctl restart website-frontend website-backend"
         log ""
         log "View logs:"
         log "  sudo journalctl -u website-frontend -f"
         log "  sudo journalctl -u website-backend -f"
-        log "  sudo journalctl -u scholars -f"
     fi
     
     log ""
     warn "IMPORTANT: Update these environment variables with production values:"
     warn "  - $WEBSITE_DIR/.env (NEXTAUTH_SECRET)"
-    warn "  - $SCHOLARS_DIR/.env (SESSION_SECRET, GOOGLE_CLIENT_ID, YAHOO credentials)"
     warn "  - Database password (currently: $DB_PASSWORD)"
 }
 

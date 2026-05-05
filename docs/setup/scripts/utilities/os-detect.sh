@@ -148,7 +148,6 @@ setup_databases() {
     local db_user="$1"
     local db_password="$2"
     local db_name_website="$3"
-    local db_name_scholars="$4"
     
     log "Setting up PostgreSQL databases..."
     
@@ -195,13 +194,6 @@ setup_databases() {
         warn "Database $db_name_website already exists"
     fi
     
-    if ! run_root -u postgres psql -lqt | cut -d \| -f 1 | grep -qw $db_name_scholars; then
-        run_root -u postgres psql -c "CREATE DATABASE $db_name_scholars;"
-        log "Created database $db_name_scholars"
-    else
-        warn "Database $db_name_scholars already exists"
-    fi
-    
     # Create user if not exists
     if ! run_root -u postgres psql -c "\du" | grep -qw $db_user; then
         run_root -u postgres psql -c "CREATE USER $db_user WITH PASSWORD '$db_password';"
@@ -212,7 +204,6 @@ setup_databases() {
     
     # Grant privileges
     run_root -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $db_name_website TO $db_user;"
-    run_root -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $db_name_scholars TO $db_user;"
     
     log "Database setup completed"
 }

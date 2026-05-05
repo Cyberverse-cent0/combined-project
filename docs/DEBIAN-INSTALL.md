@@ -43,8 +43,6 @@ sudo ./deploy-debian.sh
 ### Applications
 - **Main Website**: Next.js frontend (port 3000)
 - **Website Backend**: Python Flask API (port 8000)
-- **Scholar Forge**: Academic collaboration platform (port 4500)
-- **Scholars API**: Node.js backend (port 8081)
 - **Go Microservices**:
   - Password Service (port 9001)
   - Telemetry Service (port 9002)
@@ -54,10 +52,8 @@ sudo ./deploy-debian.sh
 ### URLs After Installation
 - **Main Site**: http://localhost (or your domain)
 - **Admin Panel**: http://localhost/admin
-- **Scholar Forge**: http://localhost/scholars
 - **APIs**: 
   - Website API: http://localhost/api
-  - Scholars API: http://localhost/scholars-api
 
 ## Service Management
 

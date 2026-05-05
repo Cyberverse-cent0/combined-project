@@ -118,16 +118,12 @@ if [ "$USE_SSL" = "true" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
     echo "Service endpoints:"
     echo "  - Main website: https://$DOMAIN_NAME"
     echo "  - Admin panel: https://$DOMAIN_NAME/admin"
-    echo "  - Scholar Forge: https://$DOMAIN_NAME/scholars"
     echo "  - Admin API: https://$DOMAIN_NAME/api/"
-    echo "  - Scholars API: https://$DOMAIN_NAME/scholars-api/"
 else
     echo "Service endpoints (HTTP):"
     echo "  - Main website: http://$DOMAIN_NAME"
     echo "  - Admin panel: http://$DOMAIN_NAME/admin"
-    echo "  - Scholar Forge: http://$DOMAIN_NAME/scholars"
     echo "  - Admin API: http://$DOMAIN_NAME/api/"
-    echo "  - Scholars API: http://$DOMAIN_NAME/scholars-api/"
 fi
 echo ""
 echo "Configuration file: $NGINX_CONF_DEST"

@@ -46,7 +46,6 @@ go build -o deploy-ngrok deploy-ngrok.go
 3. **Environment Configuration**: Once the ngrok URL is available, it updates the `.env` file with:
    - `DOMAIN_NAME`: The ngrok HTTPS URL
    - `WEBSITE_URL`: The ngrok HTTPS URL
-   - `SCHOLARS_URL`: Scholars subdomain URL
    - `CORS_ORIGIN`: The ngrok URL
    - `ADMIN_ALLOWED_ORIGIN`: The ngrok URL
    - `NEXTAUTH_URL`: The ngrok URL

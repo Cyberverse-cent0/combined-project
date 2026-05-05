@@ -21,7 +21,7 @@ combined-project/
 │   ├── .github/            # CI/CD workflows
 │   ├── logs/               # Log storage
 │   └── auto-update.*       # System service configs
-├── archive/                 # Archived unused files (includes old Scholar Forge)
+├── archive/                 # Archived unused files
 └── tools/                   # Utility scripts
 ```
 
@@ -217,25 +217,9 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
-    # Scholar Forge (path-based routing)
-    location /scholars {
-        proxy_pass http://localhost:4500;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
     # Website backend API
     location /api {
         proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-    }
-
-    # Scholars API
-    location /scholars-api {
-        proxy_pass http://localhost:8081;
         proxy_set_header Host $host;
     }
 }

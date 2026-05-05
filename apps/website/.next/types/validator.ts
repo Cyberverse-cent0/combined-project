@@ -299,6 +299,60 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/research-hub/about/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub/about">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/about/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/research-hub/awards/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub/awards">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/awards/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/research-hub/blog/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub/blog">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/blog/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/research-hub/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/research-hub/projects/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub/projects">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/projects/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/research-hub/tasks/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/research-hub/tasks">> = Specific
+  const handler = {} as typeof import("../../app/research-hub/tasks/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/research/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/research">> = Specific

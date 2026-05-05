@@ -1,14 +1,12 @@
 # PM2 Multithreading Setup
 
-This setup implements dynamic multithreading for Website and Scholar Forge applications using PM2 cluster mode with automatic scaling based on system resources.
+This setup implements dynamic multithreading for Website applications using PM2 cluster mode with automatic scaling based on system resources.
 
 ## System Requirements Detected
 - **CPU Cores**: 8
 - **Total RAM**: 15GB
 - **Free RAM**: 1GB
 - **Website Frontend Instances**: 3 (40% of cores)
-- **Scholar Forge Frontend Instances**: 1 (20% of cores)
-- **Scholars API Instances**: 1 (20% of cores)
 - **Python Backend Workers**: 4 (50% of cores)
 - **Memory per Instance**: 1024MB
 
@@ -62,29 +60,21 @@ pm2 save                # Save configuration
 
 ### Low-Spec Machine (2 cores, 4GB RAM)
 - Website Frontend: 1 instance
-- Scholar Forge Frontend: 1 instance
-- Scholars API: 1 instance
 - Python Backend: 2 workers
 - Memory per instance: ~500MB
 
 ### Medium-Spec Machine (4 cores, 8GB RAM)
 - Website Frontend: 2 instances
-- Scholar Forge Frontend: 1 instance
-- Scholars API: 1 instance
 - Python Backend: 2 workers
 - Memory per instance: ~1GB
 
 ### High-Spec Machine (8 cores, 16GB RAM) - Current System
 - Website Frontend: 3 instances
-- Scholar Forge Frontend: 1 instance
-- Scholars API: 1 instance
 - Python Backend: 4 workers
 - Memory per instance: ~1GB
 
 ### Enterprise Machine (16+ cores, 32GB+ RAM)
 - Website Frontend: 6-8 instances
-- Scholar Forge Frontend: 3-4 instances
-- Scholars API: 3-4 instances
 - Python Backend: 8 workers
 - Memory per instance: ~2GB
 

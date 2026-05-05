@@ -1,28 +1,25 @@
 # Domain Configuration Guide
 
-This guide explains how to configure domain names for the combined website and Schoolars-work-bench projects.
+This guide explains how to configure domain names for the combined website project.
 
 ## Overview
 
-Both projects are now configured to use environment variables for domain names, making it easy to change domains without modifying code. The domain configuration is centralized and shared across both projects.
+Both projects are now configured to use environment variables for domain names, making it easy to change domains without modifying code.
 
 ## Environment Variables
 
 ### Primary Domain Variables
 
 - `DOMAIN_NAME` - Your primary domain name (e.g., `your-domain.com`)
-- `SCHOLARS_SUBDOMAIN` - Subdomain for Scholar Forge (default: `scholars`)
 
 ### Derived URLs
 
 The following URLs are automatically derived from the primary domain:
 
 - `WEBSITE_URL` - Main website URL (`https://$DOMAIN_NAME`)
-- `SCHOLARS_URL` - Scholar Forge URL (`https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME`)
 - `CORS_ORIGIN` - CORS allowed origin (`https://$DOMAIN_NAME`)
 - `NEXTAUTH_URL` - NextAuth URL (`https://$DOMAIN_NAME`)
 - `NEXT_PUBLIC_SITE_URL` - Public site URL (`https://$DOMAIN_NAME`)
-- `NEXT_PUBLIC_SCHOLARS_URL` - Public scholars URL (`https://$SCHOLARS_SUBDOMAIN.$DOMAIN_NAME`)
 - `ADMIN_EMAIL` - Admin email (`admin@$DOMAIN_NAME`)
 
 ## Configuration Files
@@ -39,16 +36,6 @@ Edit `.env.local` and set your domain:
 
 ```bash
 DOMAIN_NAME=your-domain.com
-SCHOLARS_SUBDOMAIN=scholars
-```
-
-### 2. Schoolars-work-bench Configuration
-
-Edit `Schoolars-work-bench/.env`:
-
-```bash
-WEBSITE_URL=https://your-domain.com
-CORS_ORIGIN=https://your-domain.com
 ```
 
 ### 3. Website Configuration
@@ -57,10 +44,8 @@ Edit `website/.env`:
 
 ```bash
 DOMAIN_NAME=your-domain.com
-SCHOLARS_SUBDOMAIN=scholars
 NEXTAUTH_URL=https://your-domain.com
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
-NEXT_PUBLIC_SCHOLARS_URL=https://scholars.your-domain.com
 ADMIN_EMAIL=admin@your-domain.com
 ```
 
@@ -141,7 +126,7 @@ To change the domain name:
 
 ```bash
 # For systemd
-sudo systemctl restart website scholars
+sudo systemctl restart website
 
 # For docker
 cd website && docker-compose restart
@@ -175,14 +160,6 @@ If you see mixed content warnings:
 - Ensure all URLs use `https://` in production
 - Check that `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL` match
 - Verify SSL certificates are properly configured
-
-### Scholar Forge Not Accessible
-
-If Scholar Forge is not accessible:
-- Check `NEXT_PUBLIC_SCHOLARS_URL` in website `.env`
-- Verify nginx `/scholars` location block is configured
-- Ensure Scholar Forge service is running
-- Check that `WEBSITE_URL` in scholars `.env` is correct
 
 ## Security Notes
 
