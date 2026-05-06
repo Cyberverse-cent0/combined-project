@@ -628,13 +628,15 @@ setup_project() {
 }
 
 setup_from_remote() {
+    log "Setting up complete deployment from GitHub repository..."
+    
     # Create project directory
     mkdir -p $INSTALL_DIR
     cd $INSTALL_DIR
 
     # Clone repository if not already present
     if [[ ! -d "$INSTALL_DIR/apps" ]] && [[ ! -d "$INSTALL_DIR/website" ]]; then
-        log "Cloning project repository..."
+        log "Cloning project repository from GitHub..."
         
         # Define temp directory path
         local temp_dir="$INSTALL_DIR/temp"
@@ -646,21 +648,23 @@ setup_from_remote() {
         fi
         
         # Clone repository with error handling
-        log "Downloading project from repository..."
+        log "Downloading project from GitHub..."
         if ! git clone https://github.com/Cyberverse-cent0/combined-project.git "$temp_dir"; then
             error "Failed to clone repository from GitHub"
         fi
         
-        # Check if the clone has actual content (not just LICENSE)
+        # Check if the clone has actual content
         local file_count=$(find "$temp_dir" -type f ! -path "*/.git/*" | wc -l)
         if [[ $file_count -lt 5 ]]; then
             warn "Remote repository appears to be empty or incomplete"
+            warn "This suggests the repository is not ready for deployment"
+            warn "Please ensure the repository contains the complete project structure"
             warn "Falling back to local project structure..."
             setup_local_fallback
             return
         fi
         
-        # Validate the clone
+        # Validate the clone structure
         validate_git_clone "$temp_dir"
         
         # Move files with error handling and verification
@@ -695,10 +699,58 @@ setup_from_remote() {
         log "Cleaning up temp directory..."
         safe_remove_directory "$temp_dir" "temp directory"
         
-        log "Project files successfully installed from remote"
+        log "Project files successfully installed from GitHub"
+        
+        # Continue with complete installation workflow
+        log "Starting complete deployment workflow from cloned repository..."
+        complete_deployment_workflow
+        
     else
-        log "Project files already exist, skipping clone"
+        log "Project files already exist, continuing with deployment workflow..."
+        complete_deployment_workflow
     fi
+}
+
+complete_deployment_workflow() {
+    log "Starting complete deployment workflow..."
+    
+    # This function ensures all components are properly installed and configured
+    # after cloning from GitHub or when project files exist
+    
+    # Install frontend dependencies and build
+    install_frontend
+    
+    # Install backend dependencies
+    install_backend
+    
+    # Build Go services (if they exist)
+    build_go_services
+    
+    # Create production environment file
+    create_env_file
+    
+    # Install and configure systemd services
+    install_systemd_services
+    
+    # Configure nginx
+    configure_nginx
+    
+    # Setup SSL certificate
+    setup_ssl
+    
+    # Setup firewall
+    setup_firewall
+    
+    # Start all services
+    start_services
+    
+    # Perform health check
+    health_check
+    
+    # Print installation summary
+    print_summary
+    
+    log "Complete deployment workflow finished successfully!"
 }
 
 setup_local_fallback() {
@@ -1257,17 +1309,6 @@ main() {
     install_go
     setup_database
     setup_project
-    install_frontend
-    install_backend
-    build_go_services
-    create_env_file
-    install_systemd_services
-    configure_nginx
-    setup_ssl
-    setup_firewall
-    start_services
-    health_check
-    print_summary
 
     log "Installation completed successfully!"
 }
