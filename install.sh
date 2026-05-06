@@ -451,6 +451,8 @@ setup_project() {
 
         # Clone repository if not already present
         if [[ ! -d "$INSTALL_DIR/apps" ]] && [[ ! -d "$INSTALL_DIR/website" ]]; then
+            # Clean up any existing temp directory
+            rm -rf temp 2>/dev/null || true
             git clone https://github.com/Cyberverse-cent0/combined-project.git temp
             mv temp/* .
             mv temp/.* . 2>/dev/null || true
