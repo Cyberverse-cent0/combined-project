@@ -159,11 +159,19 @@ validate_git_clone() {
         error "Git clone directory missing .git folder: $clone_dir"
     fi
     
-    # Check for basic project files
-    local required_files=("README.md" "package.json")
+    # Check for basic project structure - files are in apps/website/
+    local required_files=("apps/website/README.md" "apps/website/package.json")
     for file in "${required_files[@]}"; do
         if [[ ! -f "$clone_dir/$file" ]]; then
             warn "Git clone missing expected file: $file"
+        fi
+    done
+    
+    # Also check for key directories
+    local required_dirs=("apps" "apps/website" "apps/website/backend")
+    for dir in "${required_dirs[@]}"; do
+        if [[ ! -d "$clone_dir/$dir" ]]; then
+            warn "Git clone missing expected directory: $dir"
         fi
     done
     
@@ -622,7 +630,7 @@ setup_project() {
             fi
             
             # Verify important files were moved
-            local required_files=("README.md" "package.json")
+            local required_files=("apps/website/README.md" "apps/website/package.json")
             for file in "${required_files[@]}"; do
                 if [[ ! -f "$INSTALL_DIR/$file" ]]; then
                     error "Required file not found after move: $file"
