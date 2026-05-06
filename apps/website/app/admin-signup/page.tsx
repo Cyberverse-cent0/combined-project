@@ -7,10 +7,12 @@ import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "@/components/api/client";
+import { useSession } from "@/components/admin/session-provider";
+import { PasswordStrength } from "@/components/admin/password-strength";
 
 export default function AdminSignInPage() {
   const router = useRouter();
+  const { login, isAuthenticated } = useSession();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +25,7 @@ export default function AdminSignInPage() {
     const checkBackend = async () => {
       setBackendStatus('checking');
       try {
-        const response = await fetch('http://localhost:8000/api/health');
+        const response = await fetch('http://localhost:5001/api/admin/health');
         if (response.ok) {
           setBackendStatus('online');
         } else {
@@ -45,37 +47,20 @@ export default function AdminSignInPage() {
     setError("");
 
     try {
-      // Call Python backend API via Next.js proxy
-      const response = await api.post('/api/admin/auth/login', {
-        username: username,
-        password: password,
-        otp: "" // Empty OTP since TOTP is not configured by default
-      });
+      // Use Flask session provider for authentication
+      const success = await login(username, password);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setError(errorData.error || `Server error: ${response.status}`);
-        return;
+      if (success) {
+        // Redirect to admin dashboard
+        router.push("/admin");
+      } else {
+        setError("Invalid username or password");
       }
-
-      const data = await response.json();
-
-      // Store user session data (backend uses cookie-based auth)
-      localStorage.setItem("userSession", JSON.stringify({
-        username: data.user?.username || username,
-        displayName: data.user?.displayName || "Website Administrator",
-        role: data.user?.role || "admin",
-        authenticated: data.authenticated,
-        timestamp: Date.now()
-      }));
-      
-      // Redirect to admin dashboard
-      router.push("/admin");
     } catch (error) {
       console.error("Login error:", error);
       
       if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
-        setError("Cannot connect to the backend server. Please ensure the Python backend is running.");
+        setError("Cannot connect to the backend server. Please ensure the Flask session manager is running.");
       } else if (error instanceof TypeError && error.message.includes("NetworkError")) {
         setError("Network error. Please check your connection and ensure the backend server is running.");
       } else {
@@ -217,6 +202,7 @@ export default function AdminSignInPage() {
                           )}
                         </button>
                       </div>
+                      <PasswordStrength password={password} />
                     </div>
 
                     {/* Error Message */}

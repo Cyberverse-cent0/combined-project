@@ -21,8 +21,8 @@ export class ApiClient {
       return this.baseUrl;
     }
 
-    // Server-side fallback
-    this.baseUrl = 'http://localhost:8000';
+    // Server-side fallback - updated to Flask session manager
+    this.baseUrl = 'http://localhost:5001/api/admin';
     return this.baseUrl;
   }
 
@@ -95,7 +95,7 @@ export class ApiClient {
 
 // Admin proxy function for API routes
 export async function proxyAdminRequest(request: Request, endpoint: string) {
-  const BACKEND_BASE = process.env.ADMIN_BACKEND_URL || "http://localhost:8000/api";
+  const BACKEND_BASE = process.env.ADMIN_BACKEND_URL || "http://localhost:5001/api/admin";
   const target = `${BACKEND_BASE}${endpoint}`;
   const headers = new Headers(request.headers);
   headers.delete("host");

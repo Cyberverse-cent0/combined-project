@@ -28,6 +28,7 @@ type SessionContextType = {
   sessionId: string | null;
   isAuthenticated: boolean;
   loading: boolean;
+  sessionTimeout: number;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   keepAlive: () => Promise<void>;
@@ -37,6 +38,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 // Flask backend URL - configurable via environment variable
 const FLASK_SESSION_URL = process.env.NEXT_PUBLIC_FLASK_SESSION_URL || "http://localhost:5001";
+const SESSION_TIMEOUT = 300; // 5 minutes in seconds
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   // Session state management
@@ -216,6 +218,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         sessionId,
         isAuthenticated,
         loading,
+        sessionTimeout: SESSION_TIMEOUT,
         login,
         logout,
         keepAlive,
