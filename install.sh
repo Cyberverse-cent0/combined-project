@@ -1319,7 +1319,3 @@ main() {
 
 # Run main function
 main "$@"
-
-# Run main function
-main "$@"
-
