@@ -5,13 +5,13 @@ Wants=stephenasatsa-backend.service
 
 [Service]
 Type=simple
-User=http
-Group=http
+User=www-data
+Group=www-data
 WorkingDirectory=/opt/stephenasatsa/apps/website
 Environment=NODE_ENV=production
 Environment=PORT=3000
 EnvironmentFile=/opt/stephenasatsa/.env.production
-ExecStart=/usr/bin/npm run dev
+ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
 StandardOutput=append:/var/log/stephenasatsa/frontend.log

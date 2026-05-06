@@ -29,11 +29,94 @@ combined-project/
 
 - **Website Frontend**: Next.js (React) - Main website with admin panel
 - **Website Backend**: Python/Flask - Admin API and content management
+- **Flask Session Manager**: Secure session management with auto-logout (Port 5001)
 - **Go Microservices**: High-performance services for CPU-intensive operations
   - Password Service (Port 9001) - PBKDF2 password hashing
   - Telemetry Service (Port 9002) - Monitoring and metrics
   - Image Service (Port 9003) - Image processing
   - Worker Service (Port 9004) - Background task processing
+
+## 🚀 Production Deployment
+
+### 🖥️ Dedicated Server Installation (Recommended)
+
+The installation script automates the entire setup process for production deployment on dedicated servers.
+
+#### **One-Click Installation**
+```bash
+# Download and run installation script
+curl -fsSL https://raw.githubusercontent.com/Cyberverse-cent0/combined-project/main/install.sh | sudo bash
+
+# Or clone and run manually
+git clone https://github.com/Cyberverse-cent0/combined-project.git
+cd combined-project
+sudo ./install.sh
+```
+
+#### **What the Installation Script Does:**
+✅ **System Detection** - Automatically detects OS (Ubuntu, Debian, CentOS, Arch Linux)  
+✅ **Dependencies Installation** - Installs Node.js, Python, Go, PostgreSQL, Nginx  
+✅ **Database Setup** - Creates PostgreSQL database with secure credentials  
+✅ **Project Setup** - Clones repository and sets up proper permissions  
+✅ **Frontend Build** - Installs dependencies and builds for production  
+✅ **Backend Setup** - Sets up Python virtual environment and dependencies  
+✅ **Go Services** - Builds and configures all Go microservices  
+✅ **SSL Certificates** - Configures Let's Encrypt SSL with auto-renewal  
+✅ **Firewall** - Sets up UFW/firewalld with security rules  
+✅ **Systemd Services** - Creates and enables all production services  
+✅ **Health Checks** - Verifies all services are running correctly  
+
+#### **System Requirements:**
+- **RAM**: 1GB minimum (2GB recommended, 4GB optimal)
+- **CPU**: 1 core minimum (2 cores recommended, 4 cores optimal)  
+- **Storage**: 8GB minimum (20GB recommended, 50GB optimal)
+- **OS**: Ubuntu 20.04+, Debian 11+, CentOS 8+, Arch Linux
+
+#### **During Installation:**
+- Script will prompt for domain name (press Enter for localhost)
+- Automatically generates secure passwords and secrets
+- Creates comprehensive log file at `/var/log/stephenasatsa_install.log`
+- Performs resource checks with warnings for low-spec systems
+
+#### **Post-Installation:**
+- **Website**: https://your-domain.com
+- **Admin Panel**: https://your-domain.com/admin
+- **Database**: PostgreSQL with auto-generated credentials
+- **SSL**: Let's Encrypt certificate with auto-renewal
+- **Services**: All running as systemd services
+- **Logs**: Configured for all services
+
+#### **Service Management:**
+```bash
+# Check service status
+systemctl status stephenasatsa-frontend
+systemctl status stephenasatsa-backend
+
+# View logs
+journalctl -u stephenasatsa-frontend -f
+journalctl -u stephenasatsa-backend -f
+
+# Restart services
+systemctl restart stephenasatsa-frontend
+systemctl restart stephenasatsa-backend
+
+# View all services
+systemctl status stephenasatsa-*
+```
+
+#### **Important Files:**
+- **Environment**: `/opt/stephenasatsa/.env.production`
+- **Nginx Config**: `/etc/nginx/nginx.conf`
+- **Install Log**: `/var/log/stephenasatsa_install.log`
+- **Service Logs**: `/var/log/stephenasatsa/`
+
+#### **Security Features:**
+- Automatic SSL certificate installation
+- Firewall configuration with only necessary ports
+- Secure database credentials
+- Rate limiting on API endpoints
+- Security headers configured
+- Service isolation with systemd
 
 ## 📋 Prerequisites
 
