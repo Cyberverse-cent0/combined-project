@@ -578,73 +578,42 @@ setup_database() {
 setup_project() {
     log "Setting up project files..."
 
-    # Check if we're already in the project directory
-    if [[ -f "$(pwd)/README.md" ]] && [[ -d "$(pwd)/website" ]]; then
-        log "Already in project directory, using current location"
-        INSTALL_DIR=$(pwd)
-    else
-        # Create project directory
-        mkdir -p $INSTALL_DIR
-        cd $INSTALL_DIR
-
-        # Clone repository if not already present
-        if [[ ! -d "$INSTALL_DIR/apps" ]] && [[ ! -d "$INSTALL_DIR/website" ]]; then
-            log "Cloning project repository..."
-            
-            # Define temp directory path
-            local temp_dir="$INSTALL_DIR/temp"
-            
-            # Safe cleanup of any existing temp directory
-            if [[ -d "$temp_dir" ]]; then
-                log "Removing existing temp directory..."
-                safe_remove_directory "$temp_dir" "temp directory"
-            fi
-            
-            # Clone repository with error handling
-            log "Downloading project from repository..."
-            if ! git clone https://github.com/Cyberverse-cent0/combined-project.git "$temp_dir"; then
-                error "Failed to clone repository from GitHub"
-            fi
-            
-            # Validate the clone
-            validate_git_clone "$temp_dir"
-            
-            # Move files with error handling and verification
-            log "Moving project files to installation directory..."
-            
-            # Move visible files
-            if ! mv "$temp_dir"/* . 2>/dev/null; then
-                error "Failed to move visible files from temp directory"
-            fi
-            
-            # Move hidden files (including .git, .env, etc.)
-            if ! mv "$temp_dir"/.* . 2>/dev/null; then
-                warn "Some hidden files could not be moved (this may be normal)"
-                # Try to move specific important hidden files
-                for hidden_file in ".git" ".gitignore" ".env.example" ".env"; do
-                    if [[ -e "$temp_dir/$hidden_file" ]]; then
-                        debug "Moving specific hidden file: $hidden_file"
-                        mv "$temp_dir/$hidden_file" . 2>/dev/null || warn "Could not move $hidden_file"
-                    fi
-                done
-            fi
-            
-            # Verify important files were moved
-            local required_files=("apps/website/README.md" "apps/website/package.json")
-            for file in "${required_files[@]}"; do
-                if [[ ! -f "$INSTALL_DIR/$file" ]]; then
-                    error "Required file not found after move: $file"
-                fi
-            done
-            
-            # Safe cleanup of temp directory
-            log "Cleaning up temp directory..."
-            safe_remove_directory "$temp_dir" "temp directory"
-            
-            log "Project files successfully installed"
+    # Check if we're already in the project directory and have the required structure
+    local current_dir=$(pwd)
+    if [[ -f "$current_dir/README.md" ]] && [[ -d "$current_dir/apps/website" ]]; then
+        log "Already in project directory with correct structure, using current location"
+        INSTALL_DIR="$current_dir"
+        
+        # Verify required files exist
+        if [[ -f "$INSTALL_DIR/apps/website/README.md" ]] && [[ -f "$INSTALL_DIR/apps/website/package.json" ]]; then
+            log "Project structure validated, using local files"
         else
-            log "Project files already exist, skipping clone"
+            warn "Required files missing in current directory, attempting to use remote repository..."
+            setup_from_remote
         fi
+    elif [[ -f "$current_dir/README.md" ]] && [[ -d "$current_dir/website" ]]; then
+        log "Found project with alternative structure, using current location"
+        INSTALL_DIR="$current_dir"
+        
+        # Create apps directory if it doesn't exist and move website there
+        if [[ ! -d "$INSTALL_DIR/apps" ]]; then
+            mkdir -p "$INSTALL_DIR/apps"
+            if [[ -d "$INSTALL_DIR/website" ]]; then
+                mv "$INSTALL_DIR/website" "$INSTALL_DIR/apps/"
+                log "Moved website directory to apps/website/"
+            fi
+        fi
+        
+        # Verify required files exist
+        if [[ -f "$INSTALL_DIR/apps/website/README.md" ]] && [[ -f "$INSTALL_DIR/apps/website/package.json" ]]; then
+            log "Project structure reorganized and validated"
+        else
+            warn "Required files missing after reorganization, attempting to use remote repository..."
+            setup_from_remote
+        fi
+    else
+        log "Not in project directory, setting up from remote repository..."
+        setup_from_remote
     fi
 
     # Set permissions
@@ -656,6 +625,105 @@ setup_project() {
     chown www-data:www-data /var/log/$PROJECT_NAME
 
     log "Project files setup completed"
+}
+
+setup_from_remote() {
+    # Create project directory
+    mkdir -p $INSTALL_DIR
+    cd $INSTALL_DIR
+
+    # Clone repository if not already present
+    if [[ ! -d "$INSTALL_DIR/apps" ]] && [[ ! -d "$INSTALL_DIR/website" ]]; then
+        log "Cloning project repository..."
+        
+        # Define temp directory path
+        local temp_dir="$INSTALL_DIR/temp"
+        
+        # Safe cleanup of any existing temp directory
+        if [[ -d "$temp_dir" ]]; then
+            log "Removing existing temp directory..."
+            safe_remove_directory "$temp_dir" "temp directory"
+        fi
+        
+        # Clone repository with error handling
+        log "Downloading project from repository..."
+        if ! git clone https://github.com/Cyberverse-cent0/combined-project.git "$temp_dir"; then
+            error "Failed to clone repository from GitHub"
+        fi
+        
+        # Check if the clone has actual content (not just LICENSE)
+        local file_count=$(find "$temp_dir" -type f ! -path "*/.git/*" | wc -l)
+        if [[ $file_count -lt 5 ]]; then
+            warn "Remote repository appears to be empty or incomplete"
+            warn "Falling back to local project structure..."
+            setup_local_fallback
+            return
+        fi
+        
+        # Validate the clone
+        validate_git_clone "$temp_dir"
+        
+        # Move files with error handling and verification
+        log "Moving project files to installation directory..."
+        
+        # Move visible files
+        if ! mv "$temp_dir"/* . 2>/dev/null; then
+            error "Failed to move visible files from temp directory"
+        fi
+        
+        # Move hidden files (including .git, .env, etc.)
+        if ! mv "$temp_dir"/.* . 2>/dev/null; then
+            warn "Some hidden files could not be moved (this may be normal)"
+            # Try to move specific important hidden files
+            for hidden_file in ".git" ".gitignore" ".env.example" ".env"; do
+                if [[ -e "$temp_dir/$hidden_file" ]]; then
+                    debug "Moving specific hidden file: $hidden_file"
+                    mv "$temp_dir/$hidden_file" . 2>/dev/null || warn "Could not move $hidden_file"
+                fi
+            done
+        fi
+        
+        # Verify important files were moved
+        local required_files=("apps/website/README.md" "apps/website/package.json")
+        for file in "${required_files[@]}"; do
+            if [[ ! -f "$INSTALL_DIR/$file" ]]; then
+                error "Required file not found after move: $file"
+            fi
+        done
+        
+        # Safe cleanup of temp directory
+        log "Cleaning up temp directory..."
+        safe_remove_directory "$temp_dir" "temp directory"
+        
+        log "Project files successfully installed from remote"
+    else
+        log "Project files already exist, skipping clone"
+    fi
+}
+
+setup_local_fallback() {
+    log "Setting up project from local fallback..."
+    
+    # Use the current working directory as the source
+    local source_dir="/home/codecrafter/Documents/combined"
+    
+    if [[ -d "$source_dir/apps/website" ]]; then
+        log "Using local project files from: $source_dir"
+        
+        # Copy the apps directory
+        cp -r "$source_dir/apps" "$INSTALL_DIR/"
+        
+        # Copy other important files
+        for file in "README.md" "package.json" ".env.production" "production"; do
+            if [[ -e "$source_dir/$file" ]]; then
+                cp -r "$source_dir/$file" "$INSTALL_DIR/"
+            fi
+        done
+        
+        log "Local fallback setup completed"
+    else
+        error "No valid project source found"
+    fi
 }
 
 # Install frontend dependencies
