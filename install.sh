@@ -63,7 +63,7 @@ install_system_deps() {
     
     apt-get update
     
-    # Essential packages
+    # Essential packages (excluding nodejs/npm - handled separately)
     apt-get install -y \
         curl \
         wget \
@@ -80,9 +80,7 @@ install_system_deps() {
         ufw \
         fail2ban \
         htop \
-        openssl \
-        nodejs \
-        npm
+        openssl
     
     log "System dependencies installed"
 }
