@@ -19,7 +19,7 @@ import {
 
 export const metadata = {
   title: "About Our Research Hub | Dr. Stephen Asatsa",
-  description: "Welcome to the Human Development, Indigenous Knowledge and Flourishing Lab (HDLK-L)",
+  description: "Welcome to the African Center for Cultural Psychology and Community Research - Honoring indigenous wisdom while advancing scientific knowledge.",
 };
 
 export default function ResearchAboutPage() {
@@ -31,7 +31,7 @@ export default function ResearchAboutPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#0F766E] to-teal-600 rounded-xl flex items-center justify-center text-white">
                   🧠🌿
                 </div>
-                <h1 className="text-4xl font-bold">About HDLK-L</h1>
+                <h1 className="text-4xl font-bold">African Center for Cultural Psychology</h1>
               </div>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Human Development, Indigenous Knowledge and Flourishing Lab
@@ -46,10 +46,11 @@ export default function ResearchAboutPage() {
             {/* Mission, Vision & Values */}
             <section className="space-y-8">
               <div className="text-center">
-                <h2 className="text-3xl font-bold mb-4">Our Foundation</h2>
-                <p className="text-muted-foreground">The principles that guide our research and practice</p>
+                <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
+                <p className="text-muted-foreground">
+                  To honor African wisdom through research that serves communities while advancing scientific knowledge and promoting cultural heritage.
+                </p>
               </div>
-              
               <div className="grid gap-6 md:grid-cols-3">
                 <Card className="p-6 hover:shadow-lg transition-all duration-300">
                   <div className="space-y-4">
@@ -151,7 +152,7 @@ export default function ResearchAboutPage() {
                     </div>
                     <h3 className="text-xl font-bold">Mixed-Methods Approach</h3>
                     <p className="text-muted-foreground">
-                      We combine qualitative and quantitative research methods to provide comprehensive insights, including ethnographic studies, focus groups, interviews, surveys, and statistical analysis.
+                      We blend African indigenous wisdom with modern research methodologies to develop innovative solutions that respect cultural traditions while advancing scientific knowledge for community benefit.
                     </p>
                   </div>
                 </Card>
@@ -161,9 +162,9 @@ export default function ResearchAboutPage() {
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                       <CheckCircle className="w-6 h-6 text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-bold">Evidence-Based Practice</h3>
+                    <h3 className="text-xl font-bold">Research Excellence</h3>
                     <p className="text-muted-foreground">
-                      Our research is grounded in scientific rigor and empirical evidence, following established protocols for data collection, analysis, and interpretation.
+                      Our research combines scientific rigor with cultural wisdom to address real-world challenges through innovative methodologies and community collaboration.
                     </p>
                   </div>
                 </Card>
@@ -325,7 +326,7 @@ export default function ResearchAboutPage() {
               <div className="text-center">
                 <h2 className="text-4xl font-bold mb-4 text-slate-900">Our Philosophy Pillars</h2>
                 <p className="text-slate-600 max-w-2xl mx-auto text-lg font-light">
-                  Four core principles guide our research approach and methodology
+                  Our vision honors African cultural heritage through research that empowers communities while advancing psychological science globally.
                 </p>
               </div>
 
@@ -335,7 +336,7 @@ export default function ResearchAboutPage() {
                   <div className="text-4xl mb-4">🌱</div>
                   <h3 className="text-xl font-bold text-teal-900 mb-3">Decolonizing Psychology</h3>
                   <p className="text-teal-700 text-sm leading-relaxed">
-                    Challenging Western-centric frameworks and amplifying indigenous knowledge systems from African communities.
+                    Building collaborative partnerships with African communities while respecting diverse knowledge systems and cultural traditions.
                   </p>
                 </div>
 
