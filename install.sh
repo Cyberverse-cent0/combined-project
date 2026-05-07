@@ -94,10 +94,10 @@ get_domain() {
 install_system_deps() {
     log "Installing system dependencies..."
     
-    apt-get update
+    apt update
     
     # Essential packages (excluding nodejs/npm - handled separately)
-    apt-get install -y \
+    apt install -y \
         curl \
         wget \
         git \
@@ -199,8 +199,8 @@ install_frontend() {
     # Generate Prisma client
     sudo -u www-data HOME=/var/www npx prisma generate
     
-    # Build for production
-    sudo -u www-data HOME=/var/www npm run build
+    # Build for production with increased memory limit
+    sudo -u www-data HOME=/var/www NODE_OPTIONS="--max-old-space-size=8192" npm run build
     
     log "Frontend installation completed"
 }

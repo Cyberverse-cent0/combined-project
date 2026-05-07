@@ -4,14 +4,15 @@ import { siteContent } from "@/lib/content/site-content";
 export async function GET() {
   try {
     const collaborators = siteContent.collaborators?.map((collaborator, index) => ({
-      id: collaborator.id || `collaborator-${index}`,
+      id: `collaborator-${index}`,
       name: collaborator.name,
-      title: collaborator.title,
-      institution: collaborator.institution,
-      email: collaborator.email,
-      image: collaborator.image,
-      bio: collaborator.bio,
-      featured: collaborator.featured || false
+      title: collaborator.role,
+      institution: collaborator.affiliation,
+      email: "",
+      image: collaborator.image || "",
+      bio: collaborator.summary,
+      featured: false,
+      href: collaborator.href
     })) || [];
 
     return NextResponse.json({ collaborators });

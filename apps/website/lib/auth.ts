@@ -1,7 +1,7 @@
-import type { DefaultSession, NextAuthConfig } from "next-auth";
+import type { DefaultSession, SessionStrategy } from "next-auth";
+import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth from "next-auth";
 
 import { db, hasDatabaseUrl } from "@/lib/db";
 
@@ -34,16 +34,16 @@ if (
   );
 }
 
-const authConfig: NextAuthConfig = {
+const authConfig = {
   adapter: hasDatabaseUrl && db ? PrismaAdapter(db) : undefined,
-  session: { strategy: "database" },
+  session: { strategy: "database" as SessionStrategy },
   pages: {
     signIn: "/signin",
     error: "/signin", // Redirect errors to signin page
   },
   providers,
   callbacks: {
-    async session({ session, user }) {
+    async session({ session, user }: any) {
       if (session.user && user) {
         const userWithRole = user as typeof user & { role?: string };
         session.user.id = user.id;
@@ -54,7 +54,7 @@ const authConfig: NextAuthConfig = {
       }
       return session;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile }: { user: any; account: any; profile?: any }) {
       // Only allow sign in with verified email
       if (!user.email) {
         return false;
@@ -65,7 +65,7 @@ const authConfig: NextAuthConfig = {
     },
   },
   events: {
-    async createUser({ user }) {
+    async createUser({ user }: { user: { id: string } }) {
       if (!db || !user.id) return;
       await db.userPreference.upsert({
         where: { userId: user.id },
@@ -78,4 +78,4 @@ const authConfig: NextAuthConfig = {
   },
 };
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig as any);

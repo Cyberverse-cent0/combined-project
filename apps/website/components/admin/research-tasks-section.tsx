@@ -810,7 +810,7 @@ function TaskCard({
           <div className="flex-1">
             <h4 className="font-medium text-slate-900 line-clamp-2 mb-2">{task.title}</h4>
             <div className="flex items-center gap-2 mb-2">
-              <Badge className={getPriorityColor(task.priority)} variant="outline" className="text-xs">
+              <Badge className={`${getPriorityColor(task.priority)} text-xs`} variant="outline">
                 {task.priority}
               </Badge>
               {isOverdue && (

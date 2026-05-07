@@ -1187,6 +1187,7 @@ export function AdminWorkbench({ user: externalUser, activePanel: externalActive
                               funding: "",
                               details: [],
                               link: "",
+                              team: [],
                             },
                           ],
                         }))

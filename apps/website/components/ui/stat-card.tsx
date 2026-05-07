@@ -15,7 +15,8 @@ import {
   Lock,
   Eye,
   ArrowRight,
-  Mail
+  Mail,
+  FileText
 } from "lucide-react";
 
 interface StatCardProps {
@@ -39,7 +40,8 @@ const iconMap: Record<string, any> = {
   Lock,
   Eye,
   ArrowRight,
-  Mail
+  Mail,
+  FileText
 };
 
 export function StatCard({ 

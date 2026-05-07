@@ -51,19 +51,19 @@ export function HeroSection({ className }: HeroSectionProps) {
         <StatCard 
           value="25+" 
           label="Projects" 
-          icon={Target}
+          icon="Target"
           color="text-blue-600"
         />
         <StatCard 
           value="50+" 
           label="Publications" 
-          icon={FileText}
+          icon="FileText"
           color="text-purple-600"
         />
         <StatCard 
           value="1000+" 
           label="People Impacted" 
-          icon={Users}
+          icon="Users"
           color="text-teal-600"
         />
       </div>

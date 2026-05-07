@@ -35,7 +35,7 @@ let homepageContent = {
       }
     },
     // Add fields expected by InteractiveHeroSection component
-    headline: 'Culturally Grounded Psychological Science & Research',
+    headline: 'Evidence-based psychological care and culturally grounded scholarship for people and institutions shaping healthier futures.',
     cta_text: 'Book a Consultation',
     cta_url: '/contact',
     background_image_url: '/assets/people/hero.webp',

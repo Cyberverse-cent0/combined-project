@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,150 +86,53 @@ const recentActivity = [
 ];
 
 export default function ResearchHubDashboard() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to about page by default
+    router.replace('/research-hub/about');
+  }, [router]);
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Research Hub</h1>
-        <p className="text-muted-foreground mt-1">
-          Human Development, Indigenous Knowledge and Flourishing Lab
-        </p>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statsData.map((stat) => (
-          <Card key={stat.label} className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                <p className="text-3xl font-bold mt-1">{stat.value}</p>
-              </div>
-              <stat.icon className={`w-8 h-8 ${stat.color} opacity-80`} />
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Quick Access Grid */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Quick Access</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {quickAccessCards.map((card) => (
-            <Link key={card.title} href={card.href}>
-              <Card className="p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer h-full">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <card.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{card.title}</h3>
-                      <p className="text-sm text-muted-foreground">{card.description}</p>
-                    </div>
-                  </div>
-                  {card.count !== null && (
-                    <Badge variant="secondary">{card.count}</Badge>
-                  )}
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Recent Activity</h2>
-            <Button variant="ghost" size="sm">
-              View All
-              <ArrowRight className="w-4 h-4 ml-1" />
+    <div className="min-h-screen">
+      {/* Welcome Banner - Takes half the page with purple-blue gradient */}
+      <div className="min-h-[50vh] bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 flex items-center justify-center text-white">
+        <div className="text-center space-y-6 px-4 max-w-4xl mx-auto">
+          <div className="w-20 h-20 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-4xl">
+            🧠🌿
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+            Welcome to Our Research Hub
+          </h1>
+          <p className="text-2xl md:text-3xl font-light opacity-90">
+            "Human Development, Indigenous Knowledge and Flourishing Lab"
+          </p>
+          <p className="text-lg md:text-xl opacity-80 max-w-2xl mx-auto">
+            A pioneering research center dedicated to culturally grounded psychology, 
+            indigenous knowledge systems, and decolonizing mental health practices in African contexts.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 border-0 px-8" asChild>
+              <Link href="/research-hub/about">
+                Learn More <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600 px-8" asChild>
+              <Link href="/research-hub/projects">
+                View Projects <Microscope className="w-4 h-4 ml-2" />
+              </Link>
             </Button>
           </div>
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{activity.title}</p>
-                  <p className="text-sm text-muted-foreground truncate">{activity.detail}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Research Focus Areas */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Research Focus</h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Globe className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium">Cultural Psychology</p>
-                <p className="text-xs text-muted-foreground">Indigenous knowledge systems</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Heart className="w-5 h-5 text-red-600" />
-              <div>
-                <p className="text-sm font-medium">Clinical Psychology</p>
-                <p className="text-xs text-muted-foreground">Evidence-based interventions</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Users className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm font-medium">Community Mental Health</p>
-                <p className="text-xs text-muted-foreground">Prevention and intervention</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <Lightbulb className="w-5 h-5 text-amber-600" />
-              <div>
-                <p className="text-sm font-medium">Decolonization</p>
-                <p className="text-xs text-muted-foreground">Transforming psychological practice</p>
-              </div>
-            </div>
-          </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Active Projects Preview */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Active Projects</h2>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/research-hub/projects">
-              View All
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </Button>
+      {/* Loading indicator while redirecting */}
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecting to About page...</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {siteContent.researchProjects.slice(0, 3).map((project, index) => (
-            <Card key={index} className="p-4 border-l-4 border-l-primary">
-              <div className="flex items-start justify-between mb-2">
-                <Badge variant={project.status === "Active" ? "default" : "secondary"}>
-                  {project.status}
-                </Badge>
-                {project.funding && (
-                  <span className="text-xs text-muted-foreground">{project.funding}</span>
-                )}
-              </div>
-              <h3 className="font-semibold text-sm mb-1">{project.title}</h3>
-              <p className="text-xs text-muted-foreground line-clamp-2">{project.summary}</p>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{project.category}</span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Card>
+      </div>
     </div>
   );
 }

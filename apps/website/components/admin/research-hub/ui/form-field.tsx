@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -204,13 +204,13 @@ export function MultiSelectField({
 
   const handleToggle = (optionValue: string) => {
     const newValue = value.includes(optionValue)
-      ? value.filter(v => v !== optionValue)
+      ? value.filter((v: string) => v !== optionValue)
       : [...value, optionValue];
     onChange?.(newValue);
   };
 
   const handleRemove = (optionValue: string) => {
-    const newValue = value.filter(v => v !== optionValue);
+    const newValue = value.filter((v: string) => v !== optionValue);
     onChange?.(newValue);
   };
 
@@ -237,7 +237,7 @@ export function MultiSelectField({
           {value.length === 0 ? (
             <span className="text-gray-500">{placeholder}</span>
           ) : (
-            value.map((val) => {
+            value.map((val: string) => {
               const option = options.find(opt => opt.value === val);
               return (
                 <Badge
@@ -370,20 +370,23 @@ export function RadioGroupField({
         <p className="text-sm text-gray-600">{description}</p>
       )}
       
-      <RadioGroup
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-        required={required}
-        className={cn(error && "border border-red-500 rounded-md p-2")}
-      >
+      <div className={cn("space-y-2", error && "border-red-500", className)}>
         {options.map((option) => (
           <div key={option.value} className="flex items-center space-x-2">
-            <RadioGroupItem value={option.value} id={`${name}-${option.value}`} />
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              id={`${name}-${option.value}`}
+              checked={value === option.value}
+              onChange={() => onChange?.(option.value)}
+              disabled={disabled}
+              className="text-blue-600 focus:ring-blue-500"
+            />
             <Label htmlFor={`${name}-${option.value}`}>{option.label}</Label>
           </div>
         ))}
-      </RadioGroup>
+      </div>
       
       {error && (
         <p className="text-sm text-red-600">{error}</p>

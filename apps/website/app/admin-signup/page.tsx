@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { Shield, Lock, Eye, EyeOff, AlertCircle, Zap, ShieldCheck, Activity, User, RefreshCw, LogIn, CheckCircle, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSession } from "@/components/admin/session-provider";
 import { PasswordStrength } from "@/components/admin/password-strength";
 
-export default function AdminSignInPage() {
+function AdminSignUpPageContent() {
   const router = useRouter();
-  const { login, isAuthenticated } = useSession();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -47,10 +46,20 @@ export default function AdminSignInPage() {
     setError("");
 
     try {
-      // Use Flask session provider for authentication
-      const success = await login(username, password);
+      // Simple authentication (in production, this should call your backend API)
+      const response = await fetch('http://localhost:6354/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const success = await response.json();
 
       if (success) {
+        // Store auth token or session
+        localStorage.setItem('adminToken', success.token);
         // Redirect to admin dashboard
         router.push("/admin");
       } else {
@@ -58,7 +67,6 @@ export default function AdminSignInPage() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      
       if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
         setError("Cannot connect to the backend server. Please ensure the Flask session manager is running.");
       } else if (error instanceof TypeError && error.message.includes("NetworkError")) {
@@ -253,5 +261,13 @@ export default function AdminSignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminSignUpPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminSignUpPageContent />
+    </Suspense>
   );
 }

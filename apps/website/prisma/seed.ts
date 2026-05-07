@@ -36,9 +36,8 @@ async function main() {
         title: post.title,
         excerpt: post.excerpt,
         category: post.category,
-        featuredImage: post.featuredImage,
         published: true,
-        publishedAt: new Date(post.publishedAt),
+        publishedAt: new Date(post.date),
       },
       create: {
         title: post.title,
@@ -46,9 +45,8 @@ async function main() {
         excerpt: post.excerpt,
         content: post.excerpt,
         category: post.category,
-        featuredImage: post.featuredImage,
         published: true,
-        publishedAt: new Date(post.publishedAt),
+        publishedAt: new Date(post.date),
         authorId: admin.id,
       },
     });

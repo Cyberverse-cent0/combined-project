@@ -8,7 +8,7 @@ interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-const Tabs = React.forwardRef<TabsProps>(({ className, children }, ref) => {
+const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, children }, ref) => {
   return (
     <div ref={ref} className={cn("w-full", className)}>
       {children}

@@ -30,7 +30,7 @@ export function SessionGuard({ children, fallback }: SessionGuardProps) {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       // Redirect to Flask login page
-      window.location.href = `${process.env.NEXT_PUBLIC_FLASK_SESSION_URL || "http://localhost:5001"}/login`;
+      window.location.href = `${process.env.NEXT_PUBLIC_FLASK_SESSION_URL || "http://localhost:6354"}/login`;
     }
   }, [isAuthenticated, loading, router]);
 
