@@ -28,7 +28,8 @@ check_system_requirements() {
     log "Checking system requirements..."
     
     # Check disk space (minimum 8GB recommended, 4GB minimum)
-    local available_space=$(df / | awk 'NR==2 {print $4}' | sed 's/G//')
+    # Check available space on the partition where we'll be installing (home directory)
+    local available_space=$(df "$HOME" | awk 'NR==2 {print $4}' | sed 's/G//')
     local required_space=4294967296  # 4GB in KB
     
     if [[ $available_space -lt $required_space ]]; then
@@ -41,6 +42,19 @@ check_system_requirements() {
         fi
     else
         log "✓ Sufficient disk space available ($(echo "scale=1; $available_space/1024/1024^2" | bc)GB)"
+    fi
+    
+    # Additional check: ensure we can write to installation directory
+    local test_dir="$HOME/installation-test"
+    if mkdir -p "$test_dir" 2>/dev/null && echo "test" > "$test_dir/test-file" && rm -rf "$test_dir"; then
+        log "✓ Installation directory is writable"
+    else
+        warn "⚠️  Cannot write to installation directory. Check permissions."
+        read -p "Continue anyway? Installation may fail (y/N): " continue_install
+        if [[ ! "$continue_install" =~ ^[Yy] ]]; then
+            log "Installation cancelled by user"
+            exit 0
+        fi
     fi
     
     # Check OS and package manager
