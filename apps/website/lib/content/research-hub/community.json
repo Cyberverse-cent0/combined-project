@@ -1,0 +1,217 @@
+{
+  "engagement": {
+    "title": "Ways to Get Involved",
+    "description": "Find your place in our research community and contribute to advancing culturally grounded psychology",
+    "opportunities": [
+      {
+        "id": "student-research",
+        "title": "Student Research Opportunities",
+        "description": "Join our research team as a graduate assistant or research intern. Gain hands-on experience in culturally grounded psychology research.",
+        "requirements": [
+          "Psychology or related background",
+          "Strong academic record",
+          "Interest in cultural psychology",
+          "Research experience preferred"
+        ],
+        "type": "research",
+        "icon": "users-round",
+        "color": "emerald"
+      },
+      {
+        "id": "research-collaboration",
+        "title": "Research Collaboration",
+        "description": "Partner with us on research projects, grant applications, or academic publications in psychology and mental health.",
+        "requirements": [
+          "Research expertise in relevant areas",
+          "Institutional affiliation",
+          "Interest in cross-cultural collaboration",
+          "Funding opportunities welcome"
+        ],
+        "type": "collaboration",
+        "icon": "heart-handshake",
+        "color": "teal"
+      },
+      {
+        "id": "community-engagement",
+        "title": "Community Engagement",
+        "description": "Participate in our community workshops, mental health awareness programs, and cultural psychology initiatives.",
+        "requirements": [
+          "Interest in community work",
+          "Cultural sensitivity",
+          "Time commitment for programs",
+          "No formal qualifications required"
+        ],
+        "type": "community",
+        "icon": "message-circle",
+        "color": "blue"
+      }
+    ]
+  },
+  "testimonials": [
+    {
+      "id": "luzelle-testimonial",
+      "name": "Prof. Luzelle Naudé",
+      "role": "Academic Collaborator",
+      "institution": "University of the Free State",
+      "quote": "Stephen brings clarity, compassion, and intellectual depth to both research and mentorship. He is a thoughtful collaborator with a strong grounding in culturally meaningful scholarship.",
+      "rating": 5,
+      "context": "Research collaboration on Africa Long Life Study"
+    },
+    {
+      "id": "elizabeth-testimonial",
+      "name": "Dr. Elizabeth Shino",
+      "role": "Professional Colleague",
+      "institution": "University of Namibia",
+      "quote": "His work bridges practice and academia in a way that feels rigorous, humane, and deeply relevant to African realities.",
+      "rating": 5,
+      "context": "Cross-cultural psychology research partnership"
+    },
+    {
+      "id": "mentee-testimonial",
+      "name": "Research Mentee",
+      "role": "Early-Career Scholar",
+      "institution": "Graduate Research Program",
+      "quote": "Dr. Asatsa creates space for bold thinking while giving practical guidance that makes research feel possible and purposeful.",
+      "rating": 5,
+      "context": "Graduate research supervision and mentorship"
+    }
+  ],
+  "partners": {
+    "academic": [
+      {
+        "name": "Catholic University of Eastern Africa",
+        "country": "Kenya",
+        "type": "Lead Institution",
+        "description": "Home base for HDLK-L research activities",
+        "website": "https://www.cuea.edu"
+      },
+      {
+        "name": "Durham University",
+        "country": "United Kingdom",
+        "type": "Research Partner",
+        "description": "Collaboration on cultural evolution research",
+        "website": "https://www.durham.ac.uk"
+      },
+      {
+        "name": "University of Zurich",
+        "country": "Switzerland",
+        "type": "Research Partner",
+        "description": "Lead institution for Africa Long Life Study",
+        "website": "https://www.uzh.ch"
+      },
+      {
+        "name": "University of Namibia",
+        "country": "Namibia",
+        "type": "Research Partner",
+        "description": "Africa Long Life Study partner",
+        "website": "https://www.unam.na"
+      },
+      {
+        "name": "University of the Free State",
+        "country": "South Africa",
+        "type": "Research Partner",
+        "description": "Africa Long Life Study partner",
+        "website": "https://www.ufs.ac.za"
+      },
+      {
+        "name": "Addis Ababa University",
+        "country": "Ethiopia",
+        "type": "Research Partner",
+        "description": "COVID-19 research collaboration",
+        "website": "https://www.aau.edu.et"
+      }
+    ],
+    "funding": [
+      {
+        "name": "Templeton Foundation",
+        "country": "USA",
+        "type": "Funding Partner",
+        "description": "Major funding for Luhya mourning rituals research",
+        "website": "https://www.templeton.org"
+      },
+      {
+        "name": "Swiss National Science Foundation",
+        "country": "Switzerland",
+        "type": "Funding Partner",
+        "description": "Funding for Africa Long Life Study",
+        "website": "https://www.snf.ch"
+      },
+      {
+        "name": "Cultural Evolution Society",
+        "country": "International",
+        "type": "Funding Partner",
+        "description": "Research grants and mobility funding",
+        "website": "https://www.culturalevolutionsociety.org"
+      },
+      {
+        "name": "John Templeton Foundation",
+        "country": "USA",
+        "type": "Funding Partner",
+        "description": "Travel grants and conference funding",
+        "website": "https://www.templeton.org"
+      },
+      {
+        "name": "International Consortium of Universities for Drug Demand Reduction",
+        "country": "International",
+        "type": "Funding Partner",
+        "description": "Substance use disorder research funding",
+        "website": "https://www.icuddr.org"
+      },
+      {
+        "name": "Society for Research in Child Development",
+        "country": "USA",
+        "type": "Funding Partner",
+        "description": "Social learning research funding",
+        "website": "https://www.srcd.org"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "mental-health-support",
+      "title": "Mental Health Support",
+      "description": "Access professional mental health services through BeautifulMind Consultants.",
+      "type": "service",
+      "provider": "BeautifulMind Consultants",
+      "url": "https://beautifulmind.cc/",
+      "access": "public"
+    },
+    {
+      "id": "research-tools",
+      "title": "Research Tools & Methodologies",
+      "description": "Access our research methodologies, assessment tools, and cultural psychology frameworks.",
+      "type": "academic",
+      "access": "researchers",
+      "url": "/research-hub/resources"
+    },
+    {
+      "id": "training-programs",
+      "title": "Professional Development",
+      "description": "Training workshops and programs in culturally grounded psychology practice.",
+      "type": "education",
+      "access": "practitioners",
+      "url": "/research-hub/activities"
+    },
+    {
+      "id": "cultural-frameworks",
+      "title": "Cultural Psychology Frameworks",
+      "description": "Guides and frameworks for integrating cultural context into psychological practice.",
+      "type": "academic",
+      "access": "practitioners",
+      "url": "/research-hub/resources"
+    }
+  ],
+  "newsletter": {
+    "title": "Stay Connected",
+    "description": "Join our newsletter to receive updates on research findings, upcoming events, and opportunities to get involved.",
+    "frequency": "Monthly",
+    "content": [
+      "Latest research findings",
+      "Upcoming events and workshops",
+      "Collaboration opportunities",
+      "Student research opportunities",
+      "Cultural psychology insights"
+    ],
+    "signupUrl": "/research-hub/community#newsletter"
+  }
+}

@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "0.0.0.0:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://codecrafter:change_this_secure_password@172.17.0.1:5432/stephenasatsa
+      - NEXTAUTH_URL=https://your-domain.com
+      - NEXT_PUBLIC_SCHOLARS_FORGE_URL=https://scholars.your-domain.com
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

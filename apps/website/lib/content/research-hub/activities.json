@@ -1,0 +1,180 @@
+{
+  "upcomingEvents": [
+    {
+      "id": "african-psychology-colloquium",
+      "title": "Colloquium on African Psychology",
+      "description": "Luhya Traditional Mourning Rituals: Cultural insights and therapeutic implications for African psychology.",
+      "date": "2025-10-03",
+      "time": "14:00",
+      "location": "Online",
+      "type": "Colloquium",
+      "status": "upcoming",
+      "registrationRequired": true,
+      "speaker": "Dr. Stephen Asatsa"
+    },
+    {
+      "id": "publishing-workshop",
+      "title": "Publishing Research Workshop",
+      "description": "Transform your graduate research into publishable scholarly work for international journals.",
+      "date": "2025-07-24",
+      "time": "10:00",
+      "location": "Catholic University of Eastern Africa, Nairobi",
+      "type": "Workshop",
+      "status": "upcoming",
+      "registrationRequired": true,
+      "speaker": "Dr. Stephen Asatsa"
+    }
+  ],
+  "conferences": [
+    {
+      "id": "cultural-evolution-2024",
+      "title": "Cultural Evolution Society Capstone Conference",
+      "institution": "Durham University, UK",
+      "date": "2024-09-09",
+      "endDate": "2024-09-12",
+      "type": "Conference",
+      "presentation": "Traditional Luhya mourning rituals: A cultural evolutionary approach"
+    },
+    {
+      "id": "european-personality-2024",
+      "title": "21st European Conference on Personality",
+      "institution": "Humboldt-Universität, Berlin, Germany",
+      "date": "2024-08-06",
+      "endDate": "2024-08-09",
+      "type": "Conference",
+      "presentation": "Cultural factors in personality development"
+    },
+    {
+      "id": "icuddr-2024",
+      "title": "ICUDDR Conference",
+      "institution": "Thessaloniki, Greece",
+      "date": "2024-06-24",
+      "endDate": "2024-06-28",
+      "type": "Conference",
+      "presentation": "Substance use disorders research in African contexts"
+    },
+    {
+      "id": "issbd-2024",
+      "title": "ISSBD Biennial Meeting",
+      "institution": "Lisbon, Portugal",
+      "date": "2024-06-16",
+      "endDate": "2024-06-20",
+      "type": "Conference",
+      "presentation": "Cross-cultural developmental psychology research"
+    }
+  ],
+  "publications": [
+    {
+      "id": "stephen-asatsa-cv-2025",
+      "title": "Stephen Asatsa CV 2025",
+      "year": "2025",
+      "type": "CV",
+      "summary": "Complete professional curriculum vitae including affiliations, appointments, and scholarly activity.",
+      "fileUrl": "/Stephen_Asatsa-CV-2025.pdf",
+      "doi": null
+    },
+    {
+      "id": "research-for-posterity",
+      "title": "Research for Posterity",
+      "year": "2024",
+      "type": "Presentation",
+      "summary": "Research dissemination work focused on preserving scholarship and extending community impact.",
+      "fileUrl": null,
+      "doi": null
+    },
+    {
+      "id": "afrocentric-psychology-mourning",
+      "title": "Afrocentric Psychology and Mourning Rituals",
+      "year": "2025",
+      "type": "Invited Talk",
+      "summary": "A perspective on Afrocentric psychology through Luhya mourning rituals and culturally informed healing frameworks.",
+      "fileUrl": null,
+      "doi": null
+    }
+  ],
+  "media": [
+    {
+      "id": "luhya-mourning-colloquium",
+      "title": "Colloquium on African Psychology - Luhya Traditional Mourning Rituals",
+      "href": "https://www.youtube.com/watch?v=OvJ_mf5-KxY&t=1225s",
+      "kind": "Invited talk",
+      "year": "2025",
+      "description": "A 2025 invited colloquium centered on African psychology and Luhya mourning rituals.",
+      "type": "video"
+    },
+    {
+      "id": "publishing-research-talk",
+      "title": "Publishing Research from Thesis or Dissertation",
+      "href": "https://www.youtube.com/watch?v=UOjotsZRnKM",
+      "kind": "Invited talk",
+      "year": "2025",
+      "description": "Talk focused on turning graduate research into publishable scholarly work.",
+      "type": "video"
+    },
+    {
+      "id": "trauma-civilization-seminar",
+      "title": "Trauma of Imposed Civilization Seminar",
+      "href": "https://www.youtube.com/watch?v=epLpPrMjVuY",
+      "kind": "Invited talk",
+      "year": "2025",
+      "description": "Seminar presentation on trauma, colonial legacies, and culturally grounded interpretation.",
+      "type": "video"
+    },
+    {
+      "id": "decolonization-belfast",
+      "title": "Towards Decolonization of Psychology in Africa",
+      "href": "https://www.youtube.com/watch?v=-DgeQyw7u-c",
+      "kind": "Invited talk",
+      "year": "2024",
+      "description": "Invited talk delivered in Belfast on decolonization and insights from Luhya mourning rituals.",
+      "type": "video"
+    },
+    {
+      "id": "research-posterity",
+      "title": "Research for Posterity",
+      "href": "https://www.youtube.com/watch?v=kLYfSz5yxfo",
+      "kind": "Presentation",
+      "description": "Presentation about preserving scholarship and extending research impact for posterity.",
+      "type": "video"
+    },
+    {
+      "id": "icuddr-thailand",
+      "title": "ICUDDR Conference in Chiang Mai, Thailand",
+      "href": "https://www.youtube.com/watch?v=5IXtRFASP1o&list=PLaIB9yTPNvoIc4AonyXfBatsBg-ar8jCR&index=11&t=24s",
+      "kind": "Conference presentation",
+      "year": "2023",
+      "description": "Recorded conference presentation from Chiang Mai highlighting the international substance-use prevention and recovery dialogue.",
+      "type": "video"
+    }
+  ],
+  "invitedTalks": [
+    {
+      "id": "colloquium-african-psychology-2025",
+      "title": "Colloquium on African Psychology - Luhya Traditional Mourning Rituals",
+      "date": "2025-10-03",
+      "institution": "Online",
+      "description": "Exploring traditional mourning practices through an African psychology lens"
+    },
+    {
+      "id": "publishing-workshop-2025",
+      "title": "Publishing Research from Thesis or Dissertation",
+      "date": "2025-07-24",
+      "institution": "Academic Workshop",
+      "description": "Guidance for transforming graduate research into scholarly publications"
+    },
+    {
+      "id": "trauma-seminar-2025",
+      "title": "Trauma of Imposed Civilization Seminar",
+      "date": "2025-06-29",
+      "institution": "Academic Seminar",
+      "description": "Examining psychological impacts of cultural imposition and colonial legacies"
+    },
+    {
+      "id": "afrocentric-psychology-2025",
+      "title": "Towards Afrocentric Psychology - Insights from Luhya Mourning Rituals",
+      "date": "2025-02-13",
+      "institution": "Academic Colloquium",
+      "description": "Developing Afrocentric approaches to psychology through indigenous practices"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "lab": {
+    "name": "Human Development, Indigenous Knowledge and Flourishing Lab",
+    "shortName": "HDLK-L",
+    "tagline": "Pioneering culturally grounded psychology for African wellbeing",
+    "positioning": "Catholic University of Eastern Africa",
+    "description": "A pioneering research center dedicated to culturally grounded psychology, indigenous knowledge systems, and decolonizing mental health practices in African contexts."
+  },
+  "mission": {
+    "title": "Our Mission",
+    "content": "To integrate traditional African wisdom with rigorous scientific methods to advance human flourishing across the continent and beyond, while decolonizing psychological practice and education."
+  },
+  "vision": {
+    "title": "Our Vision",
+    "content": "To become Africa's leading research hub for culturally grounded psychology, producing evidence-based knowledge that honors indigenous wisdom while meeting global academic standards."
+  },
+  "values": [
+    {
+      "title": "Cultural Authenticity",
+      "description": "Honoring and integrating indigenous knowledge systems into psychological research and practice",
+      "icon": "🌍"
+    },
+    {
+      "title": "Scientific Excellence",
+      "description": "Maintaining rigorous research methodologies and evidence-based practices",
+      "icon": "🔬"
+    },
+    {
+      "title": "Community Impact",
+      "description": "Ensuring research translates into practical benefits for communities",
+      "icon": "🤝"
+    },
+    {
+      "title": "Decolonization",
+      "description": "Transforming psychology to be more inclusive and culturally relevant",
+      "icon": "🔄"
+    }
+  ],
+  "director": {
+    "name": "Dr. Stephen Asatsa",
+    "title": "Senior Lecturer & Head of Psychology Department",
+    "institution": "Catholic University of Eastern Africa",
+    "credentials": [
+      "PhD in Psychology",
+      "Registered & Licensed Psychologist (Kenya Counselors and Psychologists Board)",
+      "Co-founder, BeautifulMind Consultants"
+    ],
+    "bio": "Dr. Stephen Asatsa is a senior Lecturer and Head of Department of Psychology at the Catholic University of Eastern Africa with extensive experience in academic strategy and research. He is an experienced Consultant Psychologist registered and licensed by the Kenya Counselors and Psychologists Board and co-founder of BeautifulMind Consultants, a Kenyan mental health social enterprise.",
+    "expertise": [
+      "Indigenous Psychology",
+      "Cross-Cultural Developmental Psychology", 
+      "Mental Health & Trauma Studies",
+      "Cultural Evolution",
+      "Thanatology"
+    ]
+  },
+  "focusAreas": [
+    {
+      "title": "Indigenous Psychology",
+      "description": "Exploring and validating traditional African healing practices and knowledge systems",
+      "icon": "🧠",
+      "color": "emerald"
+    },
+    {
+      "title": "Cross-Cultural Development",
+      "description": "Studying psychological development across diverse African contexts",
+      "icon": "🌱",
+      "color": "blue"
+    },
+    {
+      "title": "Mental Health & Trauma",
+      "description": "Addressing mental health challenges through culturally appropriate interventions",
+      "icon": "❤️",
+      "color": "purple"
+    }
+  ],
+  "internationalFootprint": {
+    "title": "Global Research Network",
+    "description": "Collaborating with institutions and researchers across multiple continents",
+    "partners": [
+      {
+        "country": "Kenya",
+        "institution": "Catholic University of Eastern Africa",
+        "role": "Lead Institution"
+      },
+      {
+        "country": "United Kingdom",
+        "institution": "Durham University",
+        "role": "Research Partner"
+      },
+      {
+        "country": "Switzerland",
+        "institution": "University of Zurich",
+        "role": "Research Partner"
+      },
+      {
+        "country": "Namibia",
+        "institution": "University of Namibia",
+        "role": "Research Partner"
+      },
+      {
+        "country": "South Africa",
+        "institution": "University of the Free State",
+        "role": "Research Partner"
+      }
+    ]
+  }
+}

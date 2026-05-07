@@ -1,0 +1,146 @@
+{
+  "leadership": [
+    {
+      "id": "stephen-asatsa",
+      "name": "Dr. Stephen Asatsa",
+      "role": "Principal Investigator & Lab Director",
+      "title": "Senior Lecturer & Head of Psychology Department",
+      "institution": "Catholic University of Eastern Africa",
+      "country": "Kenya",
+      "bio": "Leading research on indigenous psychology, cultural evolution, and decolonizing mental health practices in African contexts. Senior academic with extensive experience in teaching, research, and professional practice.",
+      "expertise": [
+        "Indigenous Psychology",
+        "Cultural Evolution", 
+        "Thanatology",
+        "Cross-Cultural Psychology",
+        "Mental Health Research"
+      ],
+      "profile": {
+        "initials": "SA",
+        "avatarColor": "emerald"
+      },
+      "links": {
+        "orcid": "https://orcid.org/0000-0002-1045-2583",
+        "googleScholar": "https://scholar.google.com/citations?user=nBzSCvUAAAAJ&hl=en",
+        "researchGate": "https://www.researchgate.net/profile/Stephen_Asatsa2"
+      }
+    }
+  ],
+  "internationalCollaborators": [
+    {
+      "id": "sheina-lew-levy",
+      "name": "Sheina Lew-Levy, PhD",
+      "role": "Co-Investigator",
+      "institution": "Durham University",
+      "country": "United Kingdom",
+      "bio": "Assistant professor of Psychology at Durham University whose work explores cultural diversity and the evolution of social learning in childhood, including hunter-gatherer societies.",
+      "expertise": [
+        "Cultural Evolution",
+        "Social Learning",
+        "Hunter-Gatherer Studies",
+        "Child Development"
+      ],
+      "profile": {
+        "initials": "SL",
+        "avatarColor": "teal"
+      },
+      "links": {
+        "website": "https://foragerchildstudies.wixsite.com/home"
+      }
+    },
+    {
+      "id": "amber-thalmayer",
+      "name": "Prof. Dr. Amber Gayle Thalmayer",
+      "role": "Overall Principal Investigator",
+      "institution": "University of Zurich",
+      "country": "Switzerland",
+      "bio": "Leads the Africa Long Life Study across participating countries with a focus on personality, mental health, and culture.",
+      "expertise": [
+        "Personality Psychology",
+        "Mental Health",
+        "Cross-Cultural Research",
+        "Longitudinal Studies"
+      ],
+      "profile": {
+        "initials": "AT",
+        "avatarColor": "blue"
+      }
+    },
+    {
+      "id": "elizabeth-shino",
+      "name": "Dr. Elizabeth Shino",
+      "role": "Principal Investigator, Namibia",
+      "institution": "University of Namibia",
+      "country": "Namibia",
+      "bio": "Research lead for the Namibia arm of the Africa Long Life Study and a featured collaborator from the original site.",
+      "expertise": [
+        "Cross-Cultural Psychology",
+        "Developmental Psychology",
+        "Adolescent Development"
+      ],
+      "profile": {
+        "initials": "ES",
+        "avatarColor": "purple"
+      }
+    },
+    {
+      "id": "luzelle-naude",
+      "name": "Prof. Luzelle Naudé",
+      "role": "Principal Investigator, South Africa",
+      "institution": "University of the Free State",
+      "country": "South Africa",
+      "bio": "South Africa lead on the Africa Long Life Study and a longstanding academic collaborator.",
+      "expertise": [
+        "Developmental Psychology",
+        "Mental Health Research",
+        "Cross-Cultural Studies"
+      ],
+      "profile": {
+        "initials": "LN",
+        "avatarColor": "orange"
+      }
+    }
+  ],
+  "researchTeam": [
+    {
+      "id": "research-assistants",
+      "title": "Graduate Research Assistants",
+      "description": "Dedicated team of graduate students supporting various research projects at the Catholic University of Eastern Africa",
+      "members": [
+        {
+          "name": "Graduate Research Team",
+          "role": "Research Assistants",
+          "institution": "Catholic University of Eastern Africa",
+          "country": "Kenya",
+          "contributions": [
+            "Data collection for Africa Long Life Study",
+            "Community engagement for mourning rituals research",
+            "Literature reviews and analysis",
+            "Research coordination and logistics"
+          ]
+        }
+      ]
+    }
+  ],
+  "students": {
+    "title": "Student Opportunities",
+    "description": "We welcome graduate and undergraduate students interested in culturally grounded psychology research",
+    "opportunities": [
+      {
+        "title": "Research Assistantships",
+        "description": "Paid and volunteer positions supporting ongoing research projects",
+        "requirements": ["Psychology background", "Research interest", "Academic excellence"]
+      },
+      {
+        "title": "Graduate Supervision",
+        "description": "Master's and PhD supervision in psychology and related fields",
+        "requirements": ["Relevant undergraduate degree", "Research proposal", "Academic merit"]
+      },
+      {
+        "title": "Internships",
+        "description": "Short-term research internships for hands-on experience",
+        "requirements": ["Current student status", "Interest in psychology", "Time commitment"]
+      }
+    ]
+  }
+}

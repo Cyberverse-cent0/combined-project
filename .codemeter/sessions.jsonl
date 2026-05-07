@@ -1,0 +1,14 @@
+{"type":"create","session":{"id":"0c0e0334-251c-495a-b457-60978639d1c5","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972217502,"focused":false,"idle":false,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}
+{"type":"update","sessionId":"0c0e0334-251c-495a-b457-60978639d1c5","patch":{"focused":false,"idle":false}}
+{"type":"update","sessionId":"0c0e0334-251c-495a-b457-60978639d1c5","patch":{"endMs":1777972310183}}
+{"type":"create","session":{"id":"8f6dcb67-2981-49c3-9de3-008000cff5fc","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972310184,"focused":true,"idle":false,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}
+{"type":"update","sessionId":"8f6dcb67-2981-49c3-9de3-008000cff5fc","patch":{"endMs":1777972310649}}
+{"type":"create","session":{"id":"3499d23d-40d7-4a60-9f29-dc4ea7697a5d","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972310649,"focused":false,"idle":false,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}
+{"type":"update","sessionId":"3499d23d-40d7-4a60-9f29-dc4ea7697a5d","patch":{"endMs":1777972312952}}
+{"type":"create","session":{"id":"bfe0ad09-c05d-4751-abc8-16b63e8026eb","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972312952,"focused":true,"idle":false,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}
+{"type":"update","sessionId":"bfe0ad09-c05d-4751-abc8-16b63e8026eb","patch":{"focused":true,"idle":false}}
+{"type":"update","sessionId":"bfe0ad09-c05d-4751-abc8-16b63e8026eb","patch":{"endMs":1777972314089}}
+{"type":"create","session":{"id":"5f0694b3-c2ac-4e7a-b3eb-93ecfbc6ff9d","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972314089,"focused":false,"idle":false,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}
+{"type":"update","sessionId":"5f0694b3-c2ac-4e7a-b3eb-93ecfbc6ff9d","patch":{"focused":false,"idle":false}}
+{"type":"update","sessionId":"5f0694b3-c2ac-4e7a-b3eb-93ecfbc6ff9d","patch":{"endMs":1777972506140}}
+{"type":"create","session":{"id":"52a29200-beab-4063-9dae-0ec4cdf67093","projectKey":"7c890649b0deca6482dbe82c79568c42","workspaceFolders":["/home/codecrafter/Documents/combined"],"startMs":1777972506201,"focused":false,"idle":true,"ideInstanceId":"c2531e11-3dde-43cc-9c0d-e77530a0375b","ideType":"vscode"}}

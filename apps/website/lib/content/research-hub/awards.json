@@ -1,0 +1,269 @@
+{
+  "awards": [
+    {
+      "id": "durham-award-2024",
+      "title": "Durham University International Research Collaboration Award",
+      "year": "2024",
+      "issuingBody": "Durham University",
+      "description": "Recognition for outstanding international research collaboration in cultural psychology.",
+      "type": "academic",
+      "significance": "high"
+    },
+    {
+      "id": "hraf-global-scholar-2023",
+      "title": "Human Relations Area Files Global Scholar",
+      "year": "2023",
+      "issuingBody": "Human Relations Area Files",
+      "description": "Recognition for contributions to cross-cultural research and indigenous knowledge systems.",
+      "type": "academic",
+      "significance": "high",
+      "url": "https://hraf.yale.edu/hraf-global-scholar-stephen-asatsa/"
+    },
+    {
+      "id": "icdss-covid-scholar-2022",
+      "title": "ICDSS Covid Global Scholar",
+      "year": "2022",
+      "issuingBody": "International Consortium of Developmental Science Societies",
+      "description": "Recognition for research on COVID-19 impacts on adolescent development across cultures.",
+      "type": "research",
+      "significance": "high",
+      "url": "http://www.fjcolab.org/srascholars-directory"
+    },
+    {
+      "id": "issbd-fellowship-2016",
+      "title": "International Society for the Study of Behavioral Development Developing Country Fellowship",
+      "year": "2016-2018",
+      "issuingBody": "International Society for the Study of Behavioral Development",
+      "description": "Three-year fellowship supporting research on behavioral development in developing countries.",
+      "type": "fellowship",
+      "significance": "high"
+    }
+  ],
+  "grants": [
+    {
+      "id": "eapp-focus-meeting-2025",
+      "title": "European Association of Personality Psychology Focus Meeting Grant",
+      "year": "2025",
+      "amount": "€10,000",
+      "issuingBody": "European Association of Personality Psychology",
+      "description": "Funding for organizing focus meeting on personality psychology research.",
+      "type": "conference",
+      "status": "active"
+    },
+    {
+      "id": "icuddr-travel-2024",
+      "title": "ICUDDR Travel Grant",
+      "year": "2024",
+      "amount": "Covered expenses",
+      "issuingBody": "International Consortium of Universities for Drug Demand Reduction",
+      "description": "Travel grant for ICUDDR Conference in Greece, June 22-28, 2024.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "issbd-travel-2024",
+      "title": "ISSBD Travel Grant",
+      "year": "2024",
+      "amount": "Covered expenses",
+      "issuingBody": "International Society for the Study of Behavioral Development",
+      "description": "Travel grant for Portugal Biennial Meeting, June 17-21, 2024.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "icuddr-travel-2023",
+      "title": "ICUDDR Travel Grant",
+      "year": "2023",
+      "amount": "Covered expenses",
+      "issuingBody": "International Consortium of Universities for Drug Demand Reduction",
+      "description": "Travel grant for ISAM Congress in Marrakesh, Morocco, Nov 2-4, 2023.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "cultural-evolution-ace-2023",
+      "title": "Cultural Evolution Society ACE Grant for scholar mobility",
+      "year": "2023",
+      "amount": "$6,000",
+      "issuingBody": "Cultural Evolution Society",
+      "description": "Grant for scholar mobility and collaborative research activities.",
+      "type": "research",
+      "status": "completed"
+    },
+    {
+      "id": "icuddr-travel-thailand-2023",
+      "title": "ICUDDR Travel Grant",
+      "year": "2023",
+      "amount": "Covered expenses",
+      "issuingBody": "International Consortium of Universities for Drug Demand Reduction",
+      "description": "Travel grant for Chiang Mai, Thailand, August 9-11, 2023.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "cultural-transformation-2022",
+      "title": "Cultural Evolution Society Cultural Transformation Grant",
+      "year": "2022",
+      "amount": "GBP 89,200",
+      "issuingBody": "Cultural Evolution Society",
+      "description": "Major grant for research on traditional Luhya mourning rituals and cultural transformation.",
+      "type": "research",
+      "status": "active",
+      "project": "Traditional Luhya mourning rituals"
+    },
+    {
+      "id": "templeton-travel-2022",
+      "title": "John Templeton Travel Grant",
+      "year": "2022",
+      "amount": "Covered expenses",
+      "issuingBody": "John Templeton Foundation",
+      "description": "Travel grant for Templeton Annual Meeting, Bahamas.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "sra-covid-fellowship-2022",
+      "title": "SRA Covid-19 Network Early Career Scholars Fellowship",
+      "year": "2022",
+      "amount": "$8,500",
+      "issuingBody": "Society for Research on Adolescence",
+      "description": "Fellowship for research on COVID-19 impacts on adolescent development.",
+      "type": "research",
+      "status": "completed",
+      "project": "COVID-19 adolescent emotional regulation"
+    },
+    {
+      "id": "icuddr-travel-abu-dhabi-2022",
+      "title": "ICUDDR Travel Grant",
+      "year": "2022",
+      "amount": "Covered expenses",
+      "issuingBody": "International Consortium of Universities for Drug Demand Reduction",
+      "description": "Travel grant for ISSUP Conference, Abu Dhabi.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "nida-small-grant-2022",
+      "title": "National Institute of Drug Abuse Small Grant",
+      "year": "2022",
+      "amount": "$5,000",
+      "issuingBody": "National Institute of Drug Abuse",
+      "description": "Small grant for substance use disorder research.",
+      "type": "research",
+      "status": "completed"
+    },
+    {
+      "id": "issbd-travel-greece-2022",
+      "title": "ISSBD Travel Grant",
+      "year": "2022",
+      "amount": "Covered expenses",
+      "issuingBody": "International Society for the Study of Behavioral Development",
+      "description": "Travel grant for Greece Biennial Meeting.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "global-academy-2021",
+      "title": "Global Academy of Liberal Arts Network Early Career Programme",
+      "year": "2021",
+      "amount": "Program funding",
+      "issuingBody": "Global Academy of Liberal Arts Network",
+      "description": "Early career program for liberal arts research and collaboration.",
+      "type": "program",
+      "status": "completed"
+    },
+    {
+      "id": "srcd-jacobs-2019",
+      "title": "SRCD-Jacobs Foundation Series on Social Learning",
+      "year": "2019",
+      "amount": "Series funding",
+      "issuingBody": "Society for Research in Child Development & Jacobs Foundation",
+      "description": "Funding for research series on social learning in child development.",
+      "type": "research",
+      "status": "completed"
+    },
+    {
+      "id": "issbd-thailand-2017",
+      "title": "ISSBD Travel Fund",
+      "year": "2017",
+      "amount": "Covered expenses",
+      "issuingBody": "International Society for the Study of Behavioral Development",
+      "description": "Travel fund for South East Asia regional workshop, Hat Yai, Thailand.",
+      "type": "travel",
+      "status": "completed"
+    },
+    {
+      "id": "issbd-developing-country-2016",
+      "title": "ISSBD Developing Country Fellowship",
+      "year": "2016-2018",
+      "amount": "Fellowship funding",
+      "issuingBody": "International Society for the Study of Behavioral Development",
+      "description": "Three-year fellowship for researchers from developing countries.",
+      "type": "fellowship",
+      "status": "completed"
+    }
+  ],
+  "recognitionTimeline": [
+    {
+      "year": "2025",
+      "events": [
+        "European Association of Personality Psychology Focus Meeting Grant (€10,000)"
+      ]
+    },
+    {
+      "year": "2024",
+      "events": [
+        "Durham University International Research Collaboration Award",
+        "Multiple ICUDDR and ISSBD travel grants"
+      ]
+    },
+    {
+      "year": "2023",
+      "events": [
+        "Human Relations Area Files Global Scholar",
+        "Cultural Evolution Society ACE Grant ($6,000)",
+        "Multiple travel grants for international conferences"
+      ]
+    },
+    {
+      "year": "2022",
+      "events": [
+        "Cultural Evolution Society Cultural Transformation Grant (GBP 89,200)",
+        "ICDSS Covid Global Scholar recognition",
+        "SRA Covid-19 Network Fellowship ($8,500)",
+        "Multiple travel and research grants"
+      ]
+    },
+    {
+      "year": "2021",
+      "events": [
+        "Global Academy of Liberal Arts Network Early Career Programme"
+      ]
+    },
+    {
+      "year": "2019",
+      "events": [
+        "SRCD-Jacobs Foundation Series on Social Learning"
+      ]
+    },
+    {
+      "year": "2017-2018",
+      "events": [
+        "ISSBD Developing Country Fellowship (3-year fellowship)"
+      ]
+    },
+    {
+      "year": "2016",
+      "events": [
+        "ISSBD Travel Fund for Thailand workshop",
+        "Beginning of ISSBD Developing Country Fellowship"
+      ]
+    }
+  ],
+  "totalFunding": {
+    "majorGrants": "GBP 89,200 + $8,500 + €10,000",
+    "travelGrants": "15+ travel grants",
+    "fellowships": "3 major fellowships",
+    "totalAmount": "Over $150,000 in research funding"
+  }
+}
